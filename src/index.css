@@ -1,1 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-hanzi: 'Noto Serif SC', serif;
+}
+
+:root {
+  --bg-primary: #F5F5F0;
+  --bg-primary-dark: #2B2A27;
+  --surface: #FFFFFF;
+  --surface-dark: #1F1E1B;
+  --accent: #C15F3C;
+  --accent-hover: #AE5630;
+  --text-primary: #1A1A18;
+  --text-primary-dark: #EEEEEE;
+  --text-muted: #B1ADA1;
+  --border: rgba(0, 0, 0, 0.08);
+  --success: #4A8C6F;
+  --error: #C15F3C;
+
+  --badge-radical-bg: #F0E6D3;
+  --badge-radical-text: #8B7355;
+  --badge-character-bg: #E6D9C9;
+  --badge-character-text: #6B5842;
+  --badge-word-bg: #D4C4B0;
+  --badge-word-text: #5A4A36;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #2B2A27;
+  --surface: #1F1E1B;
+  --text-primary: #EEEEEE;
+  --text-muted: #8A8578;
+  --border: rgba(255, 255, 255, 0.08);
+
+  --badge-radical-bg: #3D3528;
+  --badge-radical-text: #C9B898;
+  --badge-character-bg: #362F24;
+  --badge-character-text: #BDA97E;
+  --badge-word-bg: #2F291F;
+  --badge-word-text: #B09A7A;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
