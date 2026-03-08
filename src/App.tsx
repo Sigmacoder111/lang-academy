@@ -3,7 +3,9 @@ import type { Task, TaskResult, XPState } from "./types/tasks";
 import type { UserProgress } from "./types/state";
 import { loadProgress, saveProgress } from "./engine/storage";
 import { loadXPState, saveXPState, fallBackwards } from "./engine/tasks";
-import { updateMastery } from "./engine/srs";
+import { updateMastery } from "./engine/mastery";
+import { makeDefaultNodeState } from "./types/state";
+import { propagateReviewCredit } from "./engine/hierarchical-srs";
 import { saveActivityEntry, recordDailyXP } from "./engine/analytics";
 import { GRAPH } from "./data/graph";
 import { PROBLEM_BANK } from "./data/problem-bank";
@@ -67,17 +69,19 @@ function App() {
     if (!activeTask) return;
 
     const existing = progress[activeTask.topic.id];
-    const nodeState = existing ?? {
-      mastery: 0,
-      interval: 60,
-      nextReview: 0,
-      totalReviews: 0,
-      lastReviewedAt: 0,
-    };
+    const nodeState = existing ?? makeDefaultNodeState();
 
     const wasCorrectOverall = result.correctCount > result.questionsAnswered / 2;
-    const updatedNode = updateMastery(nodeState, wasCorrectOverall);
-    const newProgress = { ...progress, [activeTask.topic.id]: updatedNode };
+    const avgSolveTime = result.totalSolveTimeSeconds
+      ? result.totalSolveTimeSeconds / Math.max(1, result.questionsAnswered)
+      : undefined;
+    const expectedTime = 10;
+    const updatedNode = updateMastery(nodeState, wasCorrectOverall, avgSolveTime, expectedTime);
+    let newProgress = { ...progress, [activeTask.topic.id]: updatedNode };
+
+    if (wasCorrectOverall) {
+      newProgress = propagateReviewCredit(activeTask.topic.id, GRAPH, newProgress);
+    }
 
     // "Fall backwards" — if student struggled, schedule prerequisite review
     if (!wasCorrectOverall) {

@@ -1,5 +1,6 @@
 import type { GraphNode, PracticeProblem, ProblemBankEntry } from "../types/graph";
 import type { NodeState, UserProgress } from "../types/state";
+import { makeDefaultNodeState } from "../types/state";
 
 // --- Types ---
 
@@ -500,13 +501,13 @@ export function commitDiagnosticResults(
 }
 
 function makeNodeState(mastery: number, intervalSeconds: number, now: number): NodeState {
-  return {
+  return makeDefaultNodeState({
     mastery,
     interval: intervalSeconds,
     nextReview: now + intervalSeconds * 1000,
     totalReviews: 1,
     lastReviewedAt: now,
-  };
+  });
 }
 
 // --- Estimated question count ---

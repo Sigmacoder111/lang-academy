@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import type { GraphNode } from "../types/graph";
 import type { UserProgress } from "../types/state";
 import type { XPState } from "../types/tasks";
-import { getStats } from "../engine/srs";
+import { getStats } from "../engine/mastery";
 import {
   estimateCompletion,
   xpPaceForTarget,
