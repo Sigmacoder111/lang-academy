@@ -31,6 +31,29 @@ export interface ProblemBankEntry {
   problems: PracticeProblem[];
 }
 
+export type DiagnosticQuestionFormat =
+  | "character_to_meaning"
+  | "meaning_to_character"
+  | "sentence_context"
+  | "pinyin_to_character"
+  | "reading_comprehension";
+
+export interface DiagnosticQuestion {
+  id: string;
+  format: DiagnosticQuestionFormat;
+  prompt: string;
+  sentenceZh?: string;
+  sentenceEn?: string;
+  passage?: string;
+  passageQuestion?: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  expectedSeconds: number;
+  hskLevel: number;
+  targetNodeId: string;
+}
+
 export interface MultistepScenario {
   id: string;
   title: string;

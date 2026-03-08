@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import type { GraphNode, ProblemBankEntry, PracticeProblem } from "../types/graph";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import type { GraphNode, ProblemBankEntry, DiagnosticQuestion } from "../types/graph";
 import type { UserProgress } from "../types/state";
 import type { DiagnosticReport } from "../engine/diagnostic";
 import {
@@ -13,6 +13,7 @@ import {
   estimatedTotalQuestions,
 } from "../engine/diagnostic";
 import type { DiagnosticState } from "../engine/diagnostic";
+import { buildDiagnosticBank } from "../data/diagnostic-questions";
 
 interface DiagnosticTestProps {
   graph: GraphNode[];
@@ -25,21 +26,19 @@ type TestScreen = "intro" | "testing" | "finished";
 
 export default function DiagnosticTest({
   graph,
-  problemBank,
   onComplete,
   onBack,
 }: DiagnosticTestProps) {
   const [screen, setScreen] = useState<TestScreen>("intro");
   const [state, setState] = useState<DiagnosticState | null>(null);
-  const [currentProblem, setCurrentProblem] = useState<{
-    problem: PracticeProblem;
-    nodeId: string;
-  } | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<DiagnosticQuestion | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [timer, setTimer] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const problemStartRef = useRef<number>(0);
+
+  const diagnosticBank = useMemo(() => buildDiagnosticBank(graph), [graph]);
 
   const hasResumableState = loadDiagnosticState() !== null;
 
@@ -75,7 +74,7 @@ export default function DiagnosticTest({
         return;
       }
 
-      const result = getDiagnosticProblem(diagState, graph, problemBank);
+      const result = getDiagnosticProblem(diagState, diagnosticBank);
       if (!result) {
         const forced: DiagnosticState = { ...diagState, phase: "complete" };
         const { progress, report } = commitDiagnosticResults(forced, graph);
@@ -84,12 +83,12 @@ export default function DiagnosticTest({
         return;
       }
 
-      setCurrentProblem(result);
+      setCurrentQuestion(result.question);
       setSelectedIndex(null);
       setShowExplanation(false);
       startTimer();
     },
-    [graph, problemBank, onComplete, startTimer, stopTimer]
+    [graph, diagnosticBank, onComplete, startTimer, stopTimer]
   );
 
   const handleStart = useCallback(
@@ -111,27 +110,25 @@ export default function DiagnosticTest({
 
   const handleAnswer = useCallback(
     (index: number) => {
-      if (selectedIndex !== null || !currentProblem || !state) return;
+      if (selectedIndex !== null || !currentQuestion || !state) return;
       stopTimer();
       setSelectedIndex(index);
       setShowExplanation(true);
 
       const solveTime = (Date.now() - problemStartRef.current) / 1000;
-      const correct = index === currentProblem.problem.correctIndex;
+      const correct = index === currentQuestion.correctIndex;
 
       const newState = recordDiagnosticResponse(
         state,
-        currentProblem.nodeId,
+        currentQuestion,
         correct,
         solveTime,
-        currentProblem.problem.expectedSeconds,
-        graph
       );
 
       setState(newState);
       saveDiagnosticState(newState);
     },
-    [selectedIndex, currentProblem, state, graph, stopTimer]
+    [selectedIndex, currentQuestion, state, stopTimer]
   );
 
   const handleNext = useCallback(() => {
@@ -143,7 +140,7 @@ export default function DiagnosticTest({
     return <IntroScreen onStart={handleStart} onBack={onBack} hasResumable={hasResumableState} />;
   }
 
-  if (!currentProblem || !state) {
+  if (!currentQuestion || !state) {
     return (
       <div style={containerStyle}>
         <div style={cardStyle}>
@@ -203,85 +200,13 @@ export default function DiagnosticTest({
 
       {/* Question card */}
       <div style={cardStyle}>
-        <div style={{ marginBottom: "1.5rem" }}>
-          <p style={questionTextStyle}>{currentProblem.problem.question}</p>
-        </div>
-
-        {/* Options */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
-          {currentProblem.problem.options.map((opt, idx) => {
-            const isSelected = selectedIndex === idx;
-            const isCorrect = idx === currentProblem.problem.correctIndex;
-            const answered = selectedIndex !== null;
-
-            let bg = "var(--surface)";
-            let border = "1px solid var(--border)";
-            let textColor = "var(--text-primary)";
-
-            if (answered) {
-              if (isCorrect) {
-                bg = "rgba(74, 140, 111, 0.12)";
-                border = "1.5px solid var(--success)";
-                textColor = "var(--success)";
-              } else if (isSelected && !isCorrect) {
-                bg = "rgba(193, 95, 60, 0.12)";
-                border = "1.5px solid var(--error)";
-                textColor = "var(--error)";
-              }
-            }
-
-            return (
-              <button
-                key={idx}
-                onClick={() => handleAnswer(idx)}
-                disabled={answered}
-                style={{
-                  display: "block",
-                  width: "100%",
-                  padding: "0.875rem 1.25rem",
-                  background: bg,
-                  border,
-                  borderRadius: "0.75rem",
-                  cursor: answered ? "default" : "pointer",
-                  textAlign: "left" as const,
-                  fontFamily: "'Noto Serif SC', Georgia, serif",
-                  fontSize: "1rem",
-                  color: textColor,
-                  transition: "all 0.15s ease",
-                  opacity: answered && !isSelected && !isCorrect ? 0.5 : 1,
-                }}
-              >
-                <span style={{ marginRight: "0.75rem", fontWeight: 600, opacity: 0.5 }}>
-                  {String.fromCharCode(65 + idx)}.
-                </span>
-                {opt}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Explanation */}
-        {showExplanation && (
-          <div style={explanationContainerStyle}>
-            <div
-              style={{
-                ...explanationStyle,
-                borderLeft:
-                  selectedIndex === currentProblem.problem.correctIndex
-                    ? "3px solid var(--success)"
-                    : "3px solid var(--error)",
-              }}
-            >
-              <p style={{ margin: 0, ...textStyle, fontSize: "14px" }}>
-                {selectedIndex === currentProblem.problem.correctIndex ? "Correct!" : "Incorrect."}{" "}
-                {currentProblem.problem.explanation}
-              </p>
-            </div>
-            <button onClick={handleNext} style={nextBtnStyle}>
-              Continue
-            </button>
-          </div>
-        )}
+        <QuestionRenderer
+          question={currentQuestion}
+          selectedIndex={selectedIndex}
+          onAnswer={handleAnswer}
+          showExplanation={showExplanation}
+          onNext={handleNext}
+        />
       </div>
 
       {/* Level indicator */}
@@ -290,6 +215,342 @@ export default function DiagnosticTest({
           HSK {state.currentLevel}{state.boundaryLevel ? ` · Boundary: HSK ${state.boundaryLevel}` : ""}
         </span>
       </div>
+    </div>
+  );
+}
+
+// --- Question Renderer ---
+
+function QuestionRenderer({
+  question,
+  selectedIndex,
+  onAnswer,
+  showExplanation,
+  onNext,
+}: {
+  question: DiagnosticQuestion;
+  selectedIndex: number | null;
+  onAnswer: (index: number) => void;
+  showExplanation: boolean;
+  onNext: () => void;
+}) {
+  switch (question.format) {
+    case "character_to_meaning":
+      return (
+        <CharToMeaningView
+          question={question}
+          selectedIndex={selectedIndex}
+          onAnswer={onAnswer}
+          showExplanation={showExplanation}
+          onNext={onNext}
+        />
+      );
+    case "meaning_to_character":
+      return (
+        <MeaningToCharView
+          question={question}
+          selectedIndex={selectedIndex}
+          onAnswer={onAnswer}
+          showExplanation={showExplanation}
+          onNext={onNext}
+        />
+      );
+    case "sentence_context":
+      return (
+        <SentenceContextView
+          question={question}
+          selectedIndex={selectedIndex}
+          onAnswer={onAnswer}
+          showExplanation={showExplanation}
+          onNext={onNext}
+        />
+      );
+    case "pinyin_to_character":
+      return (
+        <PinyinToCharView
+          question={question}
+          selectedIndex={selectedIndex}
+          onAnswer={onAnswer}
+          showExplanation={showExplanation}
+          onNext={onNext}
+        />
+      );
+    case "reading_comprehension":
+      return (
+        <ReadingCompView
+          question={question}
+          selectedIndex={selectedIndex}
+          onAnswer={onAnswer}
+          showExplanation={showExplanation}
+          onNext={onNext}
+        />
+      );
+    default:
+      return null;
+  }
+}
+
+interface FormatViewProps {
+  question: DiagnosticQuestion;
+  selectedIndex: number | null;
+  onAnswer: (index: number) => void;
+  showExplanation: boolean;
+  onNext: () => void;
+}
+
+// --- Format 1: Character → Meaning ---
+
+function CharToMeaningView({ question, selectedIndex, onAnswer, showExplanation, onNext }: FormatViewProps) {
+  return (
+    <>
+      <div style={{ marginBottom: "0.75rem" }}>
+        <span style={formatLabelStyle}>What does this mean?</span>
+      </div>
+      <div style={hanziDisplayStyle}>
+        {question.prompt}
+      </div>
+      <OptionsList
+        options={question.options}
+        correctIndex={question.correctIndex}
+        selectedIndex={selectedIndex}
+        onAnswer={onAnswer}
+        isChinese={false}
+      />
+      <ExplanationBlock
+        show={showExplanation}
+        correct={selectedIndex === question.correctIndex}
+        explanation={question.explanation}
+        onNext={onNext}
+      />
+    </>
+  );
+}
+
+// --- Format 2: Meaning → Character ---
+
+function MeaningToCharView({ question, selectedIndex, onAnswer, showExplanation, onNext }: FormatViewProps) {
+  return (
+    <>
+      <div style={{ marginBottom: "0.75rem" }}>
+        <span style={formatLabelStyle}>Which word means:</span>
+      </div>
+      <div style={meaningDisplayStyle}>
+        &ldquo;{question.prompt}&rdquo;
+      </div>
+      <OptionsList
+        options={question.options}
+        correctIndex={question.correctIndex}
+        selectedIndex={selectedIndex}
+        onAnswer={onAnswer}
+        isChinese={true}
+      />
+      <ExplanationBlock
+        show={showExplanation}
+        correct={selectedIndex === question.correctIndex}
+        explanation={question.explanation}
+        onNext={onNext}
+      />
+    </>
+  );
+}
+
+// --- Format 3: Sentence Context ---
+
+function SentenceContextView({ question, selectedIndex, onAnswer, showExplanation, onNext }: FormatViewProps) {
+  return (
+    <>
+      <div style={{ marginBottom: "0.75rem" }}>
+        <span style={formatLabelStyle}>Choose the word that best completes the sentence:</span>
+      </div>
+      {question.sentenceZh && (
+        <div style={sentenceDisplayStyle}>
+          <p style={sentenceZhStyle}>{question.sentenceZh}</p>
+          {question.sentenceEn && (
+            <p style={sentenceEnStyle}>{question.sentenceEn}</p>
+          )}
+        </div>
+      )}
+      <OptionsList
+        options={question.options}
+        correctIndex={question.correctIndex}
+        selectedIndex={selectedIndex}
+        onAnswer={onAnswer}
+        isChinese={true}
+      />
+      <ExplanationBlock
+        show={showExplanation}
+        correct={selectedIndex === question.correctIndex}
+        explanation={question.explanation}
+        onNext={onNext}
+      />
+    </>
+  );
+}
+
+// --- Format 4: Pinyin → Character ---
+
+function PinyinToCharView({ question, selectedIndex, onAnswer, showExplanation, onNext }: FormatViewProps) {
+  return (
+    <>
+      <div style={{ marginBottom: "0.75rem" }}>
+        <span style={formatLabelStyle}>Which character is pronounced:</span>
+      </div>
+      <div style={pinyinDisplayStyle}>
+        {question.prompt}
+      </div>
+      <OptionsList
+        options={question.options}
+        correctIndex={question.correctIndex}
+        selectedIndex={selectedIndex}
+        onAnswer={onAnswer}
+        isChinese={true}
+      />
+      <ExplanationBlock
+        show={showExplanation}
+        correct={selectedIndex === question.correctIndex}
+        explanation={question.explanation}
+        onNext={onNext}
+      />
+    </>
+  );
+}
+
+// --- Format 5: Reading Comprehension ---
+
+function ReadingCompView({ question, selectedIndex, onAnswer, showExplanation, onNext }: FormatViewProps) {
+  return (
+    <>
+      <div style={{ marginBottom: "0.75rem" }}>
+        <span style={formatLabelStyle}>Reading Comprehension</span>
+      </div>
+      {question.passage && (
+        <div style={passageDisplayStyle}>
+          <p style={passageTextStyle}>{question.passage}</p>
+        </div>
+      )}
+      <div style={{ marginBottom: "1.25rem" }}>
+        <p style={questionTextStyle}>{question.passageQuestion ?? question.prompt}</p>
+      </div>
+      <OptionsList
+        options={question.options}
+        correctIndex={question.correctIndex}
+        selectedIndex={selectedIndex}
+        onAnswer={onAnswer}
+        isChinese={false}
+      />
+      <ExplanationBlock
+        show={showExplanation}
+        correct={selectedIndex === question.correctIndex}
+        explanation={question.explanation}
+        onNext={onNext}
+      />
+    </>
+  );
+}
+
+// --- Shared Components ---
+
+function OptionsList({
+  options,
+  correctIndex,
+  selectedIndex,
+  onAnswer,
+  isChinese,
+}: {
+  options: string[];
+  correctIndex: number;
+  selectedIndex: number | null;
+  onAnswer: (index: number) => void;
+  isChinese: boolean;
+}) {
+  const answered = selectedIndex !== null;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
+      {options.map((opt, idx) => {
+        const isSelected = selectedIndex === idx;
+        const isCorrect = idx === correctIndex;
+
+        let bg = "var(--surface)";
+        let border = "1px solid var(--border)";
+        let textColor = "var(--text-primary)";
+
+        if (answered) {
+          if (isCorrect) {
+            bg = "rgba(74, 140, 111, 0.12)";
+            border = "1.5px solid var(--success)";
+            textColor = "var(--success)";
+          } else if (isSelected && !isCorrect) {
+            bg = "rgba(193, 95, 60, 0.12)";
+            border = "1.5px solid var(--error)";
+            textColor = "var(--error)";
+          }
+        }
+
+        return (
+          <button
+            key={idx}
+            onClick={() => onAnswer(idx)}
+            disabled={answered}
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "0.875rem 1.25rem",
+              background: bg,
+              border,
+              borderRadius: "0.75rem",
+              cursor: answered ? "default" : "pointer",
+              textAlign: "left" as const,
+              fontFamily: isChinese
+                ? "'Noto Serif SC', Georgia, serif"
+                : "Georgia, 'Times New Roman', serif",
+              fontSize: isChinese ? "1.125rem" : "1rem",
+              color: textColor,
+              transition: "all 0.15s ease",
+              opacity: answered && !isSelected && !isCorrect ? 0.5 : 1,
+            }}
+          >
+            <span style={{ marginRight: "0.75rem", fontWeight: 600, opacity: 0.5 }}>
+              {String.fromCharCode(65 + idx)}.
+            </span>
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ExplanationBlock({
+  show,
+  correct,
+  explanation,
+  onNext,
+}: {
+  show: boolean;
+  correct: boolean;
+  explanation: string;
+  onNext: () => void;
+}) {
+  if (!show) return null;
+
+  return (
+    <div style={explanationContainerStyle}>
+      <div
+        style={{
+          ...explanationStyle,
+          borderLeft: correct
+            ? "3px solid var(--success)"
+            : "3px solid var(--error)",
+        }}
+      >
+        <p style={{ margin: 0, ...textStyle, fontSize: "14px" }}>
+          {correct ? "Correct!" : "Incorrect."} {explanation}
+        </p>
+      </div>
+      <button onClick={onNext} style={nextBtnStyle}>
+        Continue
+      </button>
     </div>
   );
 }
@@ -311,11 +572,11 @@ function IntroScreen({
         <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>&#128218;</div>
         <h2 style={{ ...headingStyle, marginBottom: "0.75rem" }}>Placement Diagnostic</h2>
         <p style={{ ...textStyle, marginBottom: "0.5rem", maxWidth: "28rem", marginLeft: "auto", marginRight: "auto" }}>
-          This adaptive test will determine your Chinese proficiency level in about 30-45 minutes.
+          This adaptive test will determine your Chinese proficiency level in about 20-30 minutes.
           It measures both <strong>accuracy</strong> and <strong>speed</strong> to find your knowledge frontier.
         </p>
         <p style={{ ...mutedTextStyle, marginBottom: "2rem", fontSize: "14px" }}>
-          ~35 multiple-choice questions &middot; Adapts to your level &middot; Results include placement, gaps &amp; study plan
+          ~30-35 questions &middot; 5 question types &middot; Adapts to your level &middot; Results include placement, gaps &amp; study plan
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center" }}>
@@ -345,8 +606,8 @@ function IntroScreen({
             <strong style={{ color: "var(--text-primary)" }}>How it works:</strong>
           </p>
           <ul style={{ ...mutedTextStyle, fontSize: "13px", margin: 0, paddingLeft: "1.25rem" }}>
-            <li style={{ marginBottom: "0.25rem" }}>Phase 1: Adaptive search finds your approximate level</li>
-            <li style={{ marginBottom: "0.25rem" }}>Phase 2: Frontier refinement identifies specific strengths and gaps</li>
+            <li style={{ marginBottom: "0.25rem" }}>Phase 1: Adaptive search finds your approximate level (recognition &amp; sentence context)</li>
+            <li style={{ marginBottom: "0.25rem" }}>Phase 2: Frontier refinement with recall, reading comprehension &amp; pronunciation</li>
             <li style={{ marginBottom: "0.25rem" }}>Speed matters — faster correct answers show stronger mastery</li>
             <li>You can save and resume anytime</li>
           </ul>
@@ -401,12 +662,99 @@ const mutedTextStyle: React.CSSProperties = {
 };
 
 const questionTextStyle: React.CSSProperties = {
-  fontFamily: "'Noto Serif SC', Georgia, serif",
-  fontSize: "1.125rem",
+  fontFamily: "Georgia, 'Times New Roman', serif",
+  fontSize: "1.05rem",
   fontWeight: 600,
   color: "var(--text-primary)",
   margin: 0,
   lineHeight: 1.5,
+};
+
+const formatLabelStyle: React.CSSProperties = {
+  fontFamily: "Georgia, 'Times New Roman', serif",
+  fontSize: "0.875rem",
+  fontWeight: 500,
+  color: "var(--text-muted)",
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.04em",
+};
+
+const hanziDisplayStyle: React.CSSProperties = {
+  fontFamily: "'Noto Serif SC', Georgia, serif",
+  fontSize: "3rem",
+  fontWeight: 700,
+  color: "var(--text-primary)",
+  textAlign: "center" as const,
+  padding: "1.5rem 0",
+  marginBottom: "1.5rem",
+  background: "var(--bg-primary)",
+  borderRadius: "0.75rem",
+};
+
+const meaningDisplayStyle: React.CSSProperties = {
+  fontFamily: "Georgia, 'Times New Roman', serif",
+  fontSize: "1.5rem",
+  fontWeight: 600,
+  fontStyle: "italic" as const,
+  color: "var(--text-primary)",
+  textAlign: "center" as const,
+  padding: "1.25rem 0",
+  marginBottom: "1.5rem",
+};
+
+const pinyinDisplayStyle: React.CSSProperties = {
+  fontFamily: "Georgia, 'Times New Roman', serif",
+  fontSize: "2rem",
+  fontWeight: 700,
+  color: "var(--accent)",
+  textAlign: "center" as const,
+  padding: "1.25rem 0",
+  marginBottom: "1.5rem",
+  background: "var(--bg-primary)",
+  borderRadius: "0.75rem",
+};
+
+const sentenceDisplayStyle: React.CSSProperties = {
+  padding: "1.25rem",
+  marginBottom: "1.25rem",
+  background: "var(--bg-primary)",
+  borderRadius: "0.75rem",
+  borderLeft: "3px solid var(--accent)",
+};
+
+const sentenceZhStyle: React.CSSProperties = {
+  fontFamily: "'Noto Serif SC', Georgia, serif",
+  fontSize: "1.25rem",
+  fontWeight: 600,
+  color: "var(--text-primary)",
+  margin: 0,
+  lineHeight: 1.6,
+};
+
+const sentenceEnStyle: React.CSSProperties = {
+  fontFamily: "Georgia, 'Times New Roman', serif",
+  fontSize: "0.9rem",
+  color: "var(--text-muted)",
+  margin: "0.5rem 0 0",
+  fontStyle: "italic" as const,
+  lineHeight: 1.5,
+};
+
+const passageDisplayStyle: React.CSSProperties = {
+  padding: "1.25rem",
+  marginBottom: "1.25rem",
+  background: "var(--bg-primary)",
+  borderRadius: "0.75rem",
+  borderLeft: "3px solid var(--accent)",
+};
+
+const passageTextStyle: React.CSSProperties = {
+  fontFamily: "'Noto Serif SC', Georgia, serif",
+  fontSize: "1.15rem",
+  fontWeight: 500,
+  color: "var(--text-primary)",
+  margin: 0,
+  lineHeight: 1.8,
 };
 
 const progressBarBg: React.CSSProperties = {

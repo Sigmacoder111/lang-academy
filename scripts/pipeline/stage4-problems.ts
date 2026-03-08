@@ -1,6 +1,13 @@
 /**
  * Stage 4: Generate review/quiz problem bank.
  * 2-3 extra problems per node, separate from lesson problems.
+ *
+ * Question generation rules (from LAN-16):
+ * 1. The answer must NEVER appear in the question text.
+ * 2. Distractors must be plausible — same HSK level, same part of speech, similar semantic domain.
+ * 3. Each question tests exactly one knowledge point.
+ * 4. No metalinguistic questions (no "is this a character or a word", no stroke counts).
+ * 5. Pinyin must use tone marks (not numbers).
  */
 
 import type { PracticeProblem, ProblemBankEntry } from "../../src/types/graph";
@@ -29,17 +36,50 @@ function shuffle<T>(arr: T[], rng: () => number): T[] {
   return a;
 }
 
+function hasChinese(str: string): boolean {
+  return /[\u4e00-\u9fff]/.test(str);
+}
+
+function getSameLevelNodes(node: NodeWithLesson, allNodes: NodeWithLesson[]): NodeWithLesson[] {
+  const level = node.hskLevel ?? 0;
+  return allNodes.filter(n =>
+    n.id !== node.id &&
+    (n.hskLevel ?? 0) === level &&
+    n.type === node.type &&
+    !hasChinese(n.meaning)
+  );
+}
+
 function generateReviewProblems(
   node: NodeWithLesson,
   allNodes: NodeWithLesson[],
   count: number
 ): PracticeProblem[] {
-  const rng = seededRandom(`review-bank-${node.id}`);
+  const rng = seededRandom(`review-bank-v4-${node.id}`);
   const problems: PracticeProblem[] = [];
-  const distractorPool = allNodes.filter(n => n.id !== node.id);
+
+  const sameLevelPool = getSameLevelNodes(node, allNodes);
+  const fallbackPool = allNodes.filter(n =>
+    n.id !== node.id &&
+    !hasChinese(n.meaning) &&
+    n.meaning !== node.meaning
+  );
+  const distractorPool = sameLevelPool.length >= 3 ? sameLevelPool : fallbackPool;
 
   const questionGenerators = [
-    // Translation: meaning → hanzi
+    // Character → Meaning: "What does X mean?"
+    () => {
+      const wrong = shuffle(distractorPool, rng).slice(0, 3).map(n => n.meaning);
+      const opts = shuffle([node.meaning, ...wrong], rng);
+      return {
+        question: `What does "${node.hanzi}" mean?`,
+        options: opts,
+        correctIndex: opts.indexOf(node.meaning),
+        explanation: `${node.hanzi} (${node.pinyin}) means "${node.meaning}".`,
+        expectedSeconds: 10,
+      };
+    },
+    // Meaning → Character: "Which word means X?"
     () => {
       const wrong = shuffle(distractorPool, rng).slice(0, 3).map(n => n.hanzi);
       const opts = shuffle([node.hanzi, ...wrong], rng);
@@ -48,64 +88,27 @@ function generateReviewProblems(
         options: opts,
         correctIndex: opts.indexOf(node.hanzi),
         explanation: `"${node.meaning}" is ${node.hanzi} (${node.pinyin}).`,
-        expectedSeconds: 15,
+        expectedSeconds: 12,
       };
     },
-    // Pronunciation: hanzi → pinyin
+    // Pronunciation: "How do you pronounce X?"
     () => {
       const wrong = shuffle(distractorPool, rng).slice(0, 3).map(n => n.pinyin);
       const opts = shuffle([node.pinyin, ...wrong], rng);
       return {
-        question: `How do you pronounce "${node.hanzi}"?`,
+        question: `How is "${node.hanzi}" pronounced?`,
         options: opts,
         correctIndex: opts.indexOf(node.pinyin),
         explanation: `${node.hanzi} is pronounced ${node.pinyin}.`,
         expectedSeconds: 12,
       };
     },
-    // Context: sentence completion
-    () => {
-      const wrong = shuffle(distractorPool, rng).slice(0, 3).map(n => n.hanzi);
-      const opts = shuffle([node.hanzi, ...wrong], rng);
-      const contexts = [
-        `Fill in: 他很喜欢____ (He really likes ____)`,
-        `Fill in: 请你____一下 (Please ____ for a moment)`,
-        `Fill in: 我想学____ (I want to learn ____)`,
-        `Fill in: 那个____很好 (That ____ is very good)`,
-      ];
-      const ctx = contexts[Math.floor(rng() * contexts.length)];
-      return {
-        question: `${ctx} — Choose "${node.meaning}":`,
-        options: opts,
-        correctIndex: opts.indexOf(node.hanzi),
-        explanation: `${node.hanzi} (${node.pinyin}) means "${node.meaning}" and fits the context.`,
-        expectedSeconds: 20,
-      };
-    },
-    // Odd one out
-    () => {
-      const sameType = distractorPool.filter(n => n.type === node.type);
-      const diffType = distractorPool.filter(n => n.type !== node.type);
-      const similar = shuffle(sameType, rng).slice(0, 2).map(n => n.hanzi);
-      const oddOne = shuffle(diffType, rng).slice(0, 1).map(n => n.hanzi);
-      if (oddOne.length === 0) {
-        return null;
-      }
-      const opts = shuffle([...similar, node.hanzi, oddOne[0]], rng);
-      return {
-        question: `Which one is NOT a ${node.type}?`,
-        options: opts,
-        correctIndex: opts.indexOf(oddOne[0]),
-        explanation: `${oddOne[0]} is not a ${node.type}, while the others are.`,
-        expectedSeconds: 18,
-      };
-    },
-    // Matching: pinyin → meaning
+    // Pinyin → Meaning: "What does this pronunciation mean?"
     () => {
       const wrong = shuffle(distractorPool, rng).slice(0, 3).map(n => n.meaning);
       const opts = shuffle([node.meaning, ...wrong], rng);
       return {
-        question: `What does the pronunciation "${node.pinyin}" correspond to in meaning?`,
+        question: `What does the word pronounced "${node.pinyin}" mean?`,
         options: opts,
         correctIndex: opts.indexOf(node.meaning),
         explanation: `${node.pinyin} is the pronunciation of ${node.hanzi}, meaning "${node.meaning}".`,
@@ -115,7 +118,7 @@ function generateReviewProblems(
   ];
 
   for (let i = 0; i < count; i++) {
-    const genIdx = (i + 2) % questionGenerators.length;
+    const genIdx = i % questionGenerators.length;
     const gen = questionGenerators[genIdx];
     const problem = gen();
     if (problem && problem.options.length === 4 && problem.correctIndex >= 0) {
@@ -124,11 +127,11 @@ function generateReviewProblems(
       const wrong = shuffle(distractorPool, rng).slice(0, 3).map(n => n.meaning);
       const opts = shuffle([node.meaning, ...wrong], rng);
       problems.push({
-        question: `What does "${node.hanzi}" (${node.pinyin}) mean?`,
+        question: `What does "${node.hanzi}" mean?`,
         options: opts,
         correctIndex: opts.indexOf(node.meaning),
         explanation: `${node.hanzi} (${node.pinyin}) means "${node.meaning}".`,
-        expectedSeconds: 15,
+        expectedSeconds: 10,
       });
     }
   }
@@ -137,7 +140,7 @@ function generateReviewProblems(
 }
 
 export function generateProblemBank(nodes: NodeWithLesson[]): ProblemBankEntry[] {
-  const cacheKey = `problem-bank-v3-${nodes.length}`;
+  const cacheKey = `problem-bank-v4-${nodes.length}`;
   const cached = getCached<ProblemBankEntry[]>("stage4", cacheKey);
   if (cached) {
     console.log(`  [cache hit] ${cached.length} problem bank entries loaded`);
