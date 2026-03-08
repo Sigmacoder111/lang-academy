@@ -15,6 +15,14 @@ const makeNode = (
   pinyin: "cè",
   meaning: "test",
   prereqs,
+  lesson: {
+    tutorial: "Test tutorial content.",
+    workedExample: { problem: "What does 测 mean?", solution: "It means test." },
+    practiceProblems: [
+      { question: "What does 测 mean?", options: ["test", "try", "do", "go"], correctIndex: 0, explanation: "测 means test.", expectedSeconds: 10 },
+      { question: "How is 测 pronounced?", options: ["cè", "cā", "cī", "cū"], correctIndex: 0, explanation: "测 is cè.", expectedSeconds: 10 },
+    ],
+  },
 });
 
 const makeState = (overrides: Partial<NodeState> = {}): NodeState => ({

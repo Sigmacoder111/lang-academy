@@ -9,7 +9,6 @@ export function validateGraph(nodes: GraphNode[]): ValidationResult {
   const errors: string[] = [];
   const ids = new Set<string>();
 
-  // Check unique IDs
   for (const node of nodes) {
     if (ids.has(node.id)) {
       errors.push(`Duplicate node ID: "${node.id}"`);
@@ -17,7 +16,6 @@ export function validateGraph(nodes: GraphNode[]): ValidationResult {
     ids.add(node.id);
   }
 
-  // Check all prereq IDs reference existing nodes
   for (const node of nodes) {
     for (const prereq of node.prereqs) {
       if (!ids.has(prereq)) {
@@ -28,7 +26,7 @@ export function validateGraph(nodes: GraphNode[]): ValidationResult {
     }
   }
 
-  // Check for circular dependencies via topological sort (Kahn's algorithm)
+  // Cycle detection via topological sort (Kahn's algorithm)
   const adjCount = new Map<string, number>();
   const dependents = new Map<string, string[]>();
 
@@ -60,6 +58,23 @@ export function validateGraph(nodes: GraphNode[]): ValidationResult {
     errors.push(
       `Graph contains circular dependencies (${nodes.length - visited} node(s) involved in cycles)`
     );
+  }
+
+  // Validate lesson content
+  for (const node of nodes) {
+    if (!node.lesson) {
+      errors.push(`Node "${node.id}" missing lesson content`);
+      continue;
+    }
+    if (!node.lesson.tutorial) {
+      errors.push(`Node "${node.id}" missing tutorial`);
+    }
+    if (!node.lesson.workedExample?.problem || !node.lesson.workedExample?.solution) {
+      errors.push(`Node "${node.id}" missing worked example`);
+    }
+    if (!node.lesson.practiceProblems || node.lesson.practiceProblems.length < 2) {
+      errors.push(`Node "${node.id}" has fewer than 2 practice problems`);
+    }
   }
 
   return { valid: errors.length === 0, errors };
