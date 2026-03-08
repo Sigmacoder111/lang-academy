@@ -11,6 +11,7 @@ interface DashboardProps {
   progress: UserProgress;
   xpState: XPState;
   onSelectTask: (task: Task) => void;
+  onStartDiagnostic?: () => void;
 }
 
 export default function Dashboard({
@@ -18,6 +19,7 @@ export default function Dashboard({
   progress,
   xpState,
   onSelectTask,
+  onStartDiagnostic,
 }: DashboardProps) {
   const tasks = selectTasks(graph, progress, xpState);
   const stats = getStats(graph, progress);
@@ -53,6 +55,60 @@ export default function Dashboard({
       >
         {completionPercent}% complete · {stats.mastered} of {stats.total} mastered
       </div>
+
+      {/* Diagnostic button */}
+      {onStartDiagnostic && (
+        <div style={{ marginBottom: "1.5rem" }}>
+          <button
+            onClick={onStartDiagnostic}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              width: "100%",
+              background: "var(--surface)",
+              boxShadow: "0 0.25rem 1.25rem rgba(0,0,0,0.035)",
+              borderRadius: "1rem",
+              padding: "1rem 1.5rem",
+              border: "1.5px dashed var(--accent)",
+              cursor: "pointer",
+              textAlign: "left" as const,
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-1px)";
+              e.currentTarget.style.boxShadow = "0 0.5rem 2rem rgba(0,0,0,0.06)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 0.25rem 1.25rem rgba(0,0,0,0.035)";
+            }}
+          >
+            <span style={{ fontSize: "1.25rem" }}>&#128218;</span>
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontSize: "15px",
+                  fontWeight: 600,
+                  color: "var(--accent)",
+                }}
+              >
+                Take Placement Diagnostic
+              </div>
+              <div
+                style={{
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontSize: "13px",
+                  color: "var(--text-muted)",
+                }}
+              >
+                ~35 questions · Measures mastery &amp; speed · Get personalized study plan
+              </div>
+            </div>
+          </button>
+        </div>
+      )}
 
       {/* Task list heading */}
       <div
