@@ -19,6 +19,7 @@
   --border: rgba(0, 0, 0, 0.08);
   --success: #4A8C6F;
   --error: #C15F3C;
+  --xp-gold: #D4A030;
 
   --badge-radical-bg: #F0E6D3;
   --badge-radical-text: #8B7355;
@@ -34,6 +35,7 @@
   --text-primary: #EEEEEE;
   --text-muted: #8A8578;
   --border: rgba(255, 255, 255, 0.08);
+  --xp-gold: #E0B040;
 
   --badge-radical-bg: #3D3528;
   --badge-radical-text: #C9B898;
@@ -59,4 +61,29 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes xpFill {
+  from { width: var(--xp-from, 0%); }
+  to { width: var(--xp-to, 0%); }
+}
+
+@keyframes correctFlash {
+  0% { background: var(--success); }
+  100% { background: transparent; }
+}
+
+@keyframes incorrectFlash {
+  0% { background: var(--error); }
+  100% { background: transparent; }
+}
+
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
