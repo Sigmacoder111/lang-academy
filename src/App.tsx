@@ -2,19 +2,24 @@ import { useState, useEffect, useCallback } from "react";
 import type { Task, TaskResult, XPState } from "./types/tasks";
 import type { UserProgress } from "./types/state";
 import { loadProgress, saveProgress } from "./engine/storage";
-import { loadXPState, saveXPState } from "./engine/tasks";
+import { loadXPState, saveXPState, fallBackwards } from "./engine/tasks";
 import { updateMastery } from "./engine/srs";
 import { saveActivityEntry, recordDailyXP } from "./engine/analytics";
 import { GRAPH } from "./data/graph";
+import { PROBLEM_BANK } from "./data/problem-bank";
+import type { DiagnosticReport as DiagnosticReportType } from "./engine/diagnostic";
+import { loadDiagnosticState } from "./engine/diagnostic";
 import Dashboard from "./components/Dashboard";
 import ProgressView from "./components/ProgressView";
 import LessonView from "./components/LessonView";
 import ReviewView from "./components/ReviewView";
 import QuizView from "./components/QuizView";
 import MultistepView from "./components/MultistepView";
+import DiagnosticTest from "./components/DiagnosticTest";
+import DiagnosticReportView from "./components/DiagnosticReport";
 import XPBar from "./components/XPBar";
 
-type View = "dashboard" | "lesson" | "review" | "quiz" | "multistep";
+type View = "dashboard" | "lesson" | "review" | "quiz" | "multistep" | "diagnostic" | "diagnostic_report";
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -24,12 +29,19 @@ function App() {
     return false;
   });
 
-  const [view, setView] = useState<View>("dashboard");
+  const [view, setView] = useState<View>(() => {
+    const savedProgress = loadProgress();
+    const hasDiagnostic = loadDiagnosticState() !== null;
+    const hasAnyProgress = Object.keys(savedProgress).length > 0;
+    if (!hasAnyProgress && !hasDiagnostic) return "diagnostic";
+    return "dashboard";
+  });
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [progress, setProgress] = useState<UserProgress>(loadProgress);
   const [xpState, setXpState] = useState<XPState>(loadXPState);
   const [activeTab, setActiveTab] = useState<"dashboard" | "progress">("dashboard");
   const [taskStartTime, setTaskStartTime] = useState<number>(0);
+  const [diagnosticReport, setDiagnosticReport] = useState<DiagnosticReportType | null>(null);
 
   useEffect(() => {
     document.documentElement.setAttribute(
@@ -66,6 +78,21 @@ function App() {
     const wasCorrectOverall = result.correctCount > result.questionsAnswered / 2;
     const updatedNode = updateMastery(nodeState, wasCorrectOverall);
     const newProgress = { ...progress, [activeTask.topic.id]: updatedNode };
+
+    // "Fall backwards" — if student struggled, schedule prerequisite review
+    if (!wasCorrectOverall) {
+      const weakPrereqs = fallBackwards(activeTask.topic.id, GRAPH, newProgress);
+      for (const prereq of weakPrereqs.slice(0, 2)) {
+        const prereqState = newProgress[prereq.id];
+        if (prereqState) {
+          newProgress[prereq.id] = {
+            ...prereqState,
+            nextReview: Date.now(),
+          };
+        }
+      }
+    }
+
     setProgress(newProgress);
     saveProgress(newProgress);
 
@@ -109,6 +136,35 @@ function App() {
   const handleBack = useCallback(() => {
     setActiveTask(null);
     setView("dashboard");
+  }, []);
+
+  const handleDiagnosticComplete = useCallback(
+    (newProgress: UserProgress, report: DiagnosticReportType) => {
+      const mergedProgress = { ...progress, ...newProgress };
+      setProgress(mergedProgress);
+      saveProgress(mergedProgress);
+      setDiagnosticReport(report);
+      setView("diagnostic_report");
+    },
+    [progress]
+  );
+
+  const handleStartStudying = useCallback(
+    (recommendedXP: number) => {
+      const newXPState: XPState = {
+        ...xpState,
+        dailyGoal: recommendedXP,
+      };
+      setXpState(newXPState);
+      saveXPState(newXPState);
+      setDiagnosticReport(null);
+      setView("dashboard");
+    },
+    [xpState]
+  );
+
+  const handleStartDiagnostic = useCallback(() => {
+    setView("diagnostic");
   }, []);
 
   return (
@@ -189,6 +245,7 @@ function App() {
             progress={progress}
             xpState={xpState}
             onSelectTask={handleSelectTask}
+            onStartDiagnostic={handleStartDiagnostic}
           />
         )}
 
@@ -231,6 +288,23 @@ function App() {
             progress={progress}
             onComplete={handleTaskComplete}
             onBack={handleBack}
+          />
+        )}
+
+        {view === "diagnostic" && (
+          <DiagnosticTest
+            graph={GRAPH}
+            problemBank={PROBLEM_BANK}
+            onComplete={handleDiagnosticComplete}
+            onBack={handleBack}
+          />
+        )}
+
+        {view === "diagnostic_report" && diagnosticReport && (
+          <DiagnosticReportView
+            report={diagnosticReport}
+            graph={GRAPH}
+            onStartStudying={handleStartStudying}
           />
         )}
       </main>

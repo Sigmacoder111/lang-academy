@@ -65,6 +65,8 @@ export function selectTasks(
   const dueForReview: { node: GraphNode; overdueBy: number }[] = [];
   const newUnlocked: GraphNode[] = [];
   const mastered: GraphNode[] = [];
+  const conditionalRetest: GraphNode[] = [];
+  const foundationalGaps: GraphNode[] = [];
 
   for (const node of graph) {
     if (!isUnlocked(node.id, graph, progress)) continue;
@@ -77,6 +79,19 @@ export function selectTasks(
       if (state.mastery >= 0.8) {
         mastered.push(node);
       }
+      // Conditional topics (mastery 0.5-0.79) from diagnostic — retest soon
+      if (state.mastery >= 0.5 && state.mastery < 0.8 && state.totalReviews <= 2) {
+        conditionalRetest.push(node);
+      }
+      // Foundational gaps: low mastery nodes that block other nodes
+      if (state.mastery < 0.5 && state.mastery > 0) {
+        const hasBlockedChildren = graph.some(
+          (other) => other.prereqs.includes(node.id)
+        );
+        if (hasBlockedChildren) {
+          foundationalGaps.push(node);
+        }
+      }
     } else {
       newUnlocked.push(node);
     }
@@ -84,7 +99,21 @@ export function selectTasks(
 
   dueForReview.sort((a, b) => b.overdueBy - a.overdueBy);
 
+  // 1. Conditional retests get priority (diagnostic borderline topics)
+  for (const node of conditionalRetest.slice(0, 1)) {
+    tasks.push({
+      id: `review-${node.id}`,
+      type: "review",
+      topic: node,
+      xpReward: 5,
+      estimatedMinutes: 3,
+      required: true,
+    });
+  }
+
+  // 2. Regular reviews
   for (const { node } of dueForReview.slice(0, 2)) {
+    if (tasks.some((t) => t.topic.id === node.id)) continue;
     tasks.push({
       id: `review-${node.id}`,
       type: "review",
@@ -94,7 +123,24 @@ export function selectTasks(
     });
   }
 
+  // 3. Interleave foundational gap remediation (parallel paths)
+  if (foundationalGaps.length > 0 && tasks.length < 4) {
+    const gap = foundationalGaps[0];
+    if (!tasks.some((t) => t.topic.id === gap.id)) {
+      tasks.push({
+        id: `lesson-${gap.id}`,
+        type: "lesson",
+        topic: gap,
+        xpReward: 10,
+        estimatedMinutes: 8,
+      });
+    }
+  }
+
+  // 4. Course-level lessons (in parallel with gaps)
   for (const node of newUnlocked.slice(0, 2)) {
+    if (tasks.length >= 4) break;
+    if (tasks.some((t) => t.topic.id === node.id)) continue;
     tasks.push({
       id: `lesson-${node.id}`,
       type: "lesson",
@@ -104,53 +150,60 @@ export function selectTasks(
     });
   }
 
+  // 5. Quiz gate
   if (xpState.xpSinceLastQuiz >= QUIZ_GATE_XP && mastered.length >= 3) {
     const quizTopic = mastered[Math.floor(Math.random() * mastered.length)];
-    tasks.push({
-      id: `quiz-${Date.now()}`,
-      type: "quiz",
-      topic: quizTopic,
-      xpReward: 15,
-      estimatedMinutes: 5,
-      required: true,
-    });
+    if (!tasks.some((t) => t.topic.id === quizTopic.id)) {
+      tasks.push({
+        id: `quiz-${Date.now()}`,
+        type: "quiz",
+        topic: quizTopic,
+        xpReward: 15,
+        estimatedMinutes: 5,
+        required: true,
+      });
+    }
   }
 
+  // 6. Multistep
   if (mastered.length >= 4 && tasks.length < 5) {
     const multistepTopic =
       mastered[Math.floor(Math.random() * mastered.length)];
-    tasks.push({
-      id: `multistep-${Date.now()}`,
-      type: "multistep",
-      topic: multistepTopic,
-      xpReward: 20,
-      estimatedMinutes: 12,
-    });
+    if (!tasks.some((t) => t.topic.id === multistepTopic.id)) {
+      tasks.push({
+        id: `multistep-${Date.now()}`,
+        type: "multistep",
+        topic: multistepTopic,
+        xpReward: 20,
+        estimatedMinutes: 12,
+      });
+    }
   }
 
+  // Fill remaining slots
   while (tasks.length < 5) {
-    if (newUnlocked.length > tasks.filter((t) => t.type === "lesson").length) {
-      const idx = tasks.filter((t) => t.type === "lesson").length;
-      if (idx < newUnlocked.length) {
+    const lessonCount = tasks.filter((t) => t.type === "lesson").length;
+    if (lessonCount < newUnlocked.length) {
+      const node = newUnlocked[lessonCount];
+      if (!tasks.some((t) => t.topic.id === node.id)) {
         tasks.push({
-          id: `lesson-${newUnlocked[idx].id}`,
+          id: `lesson-${node.id}`,
           type: "lesson",
-          topic: newUnlocked[idx],
+          topic: node,
           xpReward: 10,
           estimatedMinutes: 8,
         });
         continue;
       }
     }
-    if (
-      dueForReview.length > tasks.filter((t) => t.type === "review").length
-    ) {
-      const idx = tasks.filter((t) => t.type === "review").length;
-      if (idx < dueForReview.length) {
+    const reviewCount = tasks.filter((t) => t.type === "review").length;
+    if (reviewCount < dueForReview.length) {
+      const { node } = dueForReview[reviewCount];
+      if (!tasks.some((t) => t.topic.id === node.id)) {
         tasks.push({
-          id: `review-${dueForReview[idx].node.id}`,
+          id: `review-${node.id}`,
           type: "review",
-          topic: dueForReview[idx].node,
+          topic: node,
           xpReward: 5,
           estimatedMinutes: 3,
         });
@@ -166,6 +219,37 @@ export function selectTasks(
     seen.add(t.topic.id);
     return true;
   }).slice(0, 5);
+}
+
+/**
+ * "Fall backwards" — when a student struggles on a topic, find prerequisite
+ * nodes that are weak and should be revisited. Returns prerequisite nodes
+ * sorted by how much remediation they need.
+ */
+export function fallBackwards(
+  nodeId: string,
+  graph: GraphNode[],
+  progress: UserProgress
+): GraphNode[] {
+  const node = graph.find((n) => n.id === nodeId);
+  if (!node) return [];
+
+  const weakPrereqs: { node: GraphNode; mastery: number }[] = [];
+
+  for (const prereqId of node.prereqs) {
+    const prereqNode = graph.find((n) => n.id === prereqId);
+    if (!prereqNode) continue;
+
+    const state = progress[prereqId];
+    const mastery = state?.mastery ?? 0;
+
+    if (mastery < 0.8) {
+      weakPrereqs.push({ node: prereqNode, mastery });
+    }
+  }
+
+  weakPrereqs.sort((a, b) => a.mastery - b.mastery);
+  return weakPrereqs.map((wp) => wp.node);
 }
 
 export function generateMCQuestions(
