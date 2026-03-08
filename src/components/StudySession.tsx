@@ -1,7 +1,8 @@
 import { useState } from "react";
 import type { GraphNode } from "../types/graph";
 import type { UserProgress } from "../types/state";
-import { getNextItem, updateMastery, getStats } from "../engine/srs";
+import { updateMastery, getStats, getNextItem } from "../engine/mastery";
+import { makeDefaultNodeState } from "../types/state";
 import { saveProgress, loadProgress } from "../engine/storage";
 import { GRAPH } from "../data/graph";
 import StudyCard from "./StudyCard";
@@ -24,13 +25,7 @@ export default function StudySession() {
     if (!currentNode) return;
 
     const existing = progress[currentNode.id];
-    const nodeState = existing ?? {
-      mastery: 0,
-      interval: 60,
-      nextReview: 0,
-      totalReviews: 0,
-      lastReviewedAt: 0,
-    };
+    const nodeState = existing ?? makeDefaultNodeState();
 
     const updated = updateMastery(nodeState, correct);
     const newProgress = { ...progress, [currentNode.id]: updated };

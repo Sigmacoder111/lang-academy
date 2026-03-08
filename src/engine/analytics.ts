@@ -2,7 +2,7 @@ import type { GraphNode } from "../types/graph";
 import type { UserProgress } from "../types/state";
 import type { XPState } from "../types/tasks";
 import type { ActivityEntry, DailyXP, NodeMasteryState } from "../types/analytics";
-import { isUnlocked } from "./srs";
+import { isUnlocked } from "./mastery";
 
 const ACTIVITY_KEY = "lang-academy-activity";
 const XP_HISTORY_KEY = "lang-academy-xp-history";

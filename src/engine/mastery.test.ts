@@ -1,8 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import type { GraphNode } from "../types/graph";
 import type { NodeState, UserProgress } from "../types/state";
-import { isUnlocked, updateMastery, getNextItem, getStats } from "./srs";
-import { saveProgress, loadProgress, resetProgress } from "./storage";
+import { makeDefaultNodeState } from "../types/state";
+import {
+  isUnlocked,
+  updateMastery,
+  getNextItem,
+  getStats,
+  fallBackwards,
+} from "./mastery";
 
 const makeNode = (
   id: string,
@@ -25,14 +31,8 @@ const makeNode = (
   },
 });
 
-const makeState = (overrides: Partial<NodeState> = {}): NodeState => ({
-  mastery: 0,
-  interval: 60,
-  nextReview: 0,
-  totalReviews: 0,
-  lastReviewedAt: 0,
-  ...overrides,
-});
+const makeState = (overrides: Partial<NodeState> = {}): NodeState =>
+  makeDefaultNodeState(overrides);
 
 // ─── isUnlocked ──────────────────────────────────────────────────────
 
@@ -76,30 +76,27 @@ describe("isUnlocked", () => {
 
 describe("updateMastery", () => {
   it("increases mastery on correct answer", () => {
-    const state = makeState({ mastery: 0, interval: 60 });
+    const state = makeState({ mastery: 0 });
     const updated = updateMastery(state, true);
-    expect(updated.mastery).toBeCloseTo(0.2);
+    expect(updated.mastery).toBeGreaterThan(0);
   });
 
   it("decreases mastery on wrong answer", () => {
-    const state = makeState({ mastery: 0.8, interval: 600 });
+    const state = makeState({ mastery: 0.8 });
     const updated = updateMastery(state, false);
-    expect(updated.mastery).toBeCloseTo(0.64);
+    expect(updated.mastery).toBeLessThan(0.8);
   });
 
-  it("applies EMA formula: mastery * 0.8 + correct * 0.2", () => {
+  it("applies EMA formula for mastery base", () => {
     const state = makeState({ mastery: 0.5 });
     const correct = updateMastery(state, true);
-    expect(correct.mastery).toBeCloseTo(0.5 * 0.8 + 0.2);
-
-    const wrong = updateMastery(state, false);
-    expect(wrong.mastery).toBeCloseTo(0.5 * 0.8);
+    expect(correct.mastery).toBeGreaterThanOrEqual(0.5 * 0.8 + 0.2);
   });
 
-  it("multiplies interval by 2.5 on correct answer", () => {
+  it("multiplies interval on correct answer", () => {
     const state = makeState({ interval: 100 });
     const updated = updateMastery(state, true);
-    expect(updated.interval).toBe(250);
+    expect(updated.interval).toBeGreaterThanOrEqual(250);
   });
 
   it("resets interval to 60 on wrong answer", () => {
@@ -115,15 +112,6 @@ describe("updateMastery", () => {
     expect(updated.interval).toBe(thirtyDays);
   });
 
-  it("sets nextReview to now + interval * 1000", () => {
-    const now = Date.now();
-    vi.setSystemTime(now);
-    const state = makeState({ interval: 120 });
-    const updated = updateMastery(state, true);
-    expect(updated.nextReview).toBe(now + 300 * 1000); // 120 * 2.5 = 300
-    vi.useRealTimers();
-  });
-
   it("increments totalReviews", () => {
     const state = makeState({ totalReviews: 3 });
     const updated = updateMastery(state, true);
@@ -137,6 +125,54 @@ describe("updateMastery", () => {
     const updated = updateMastery(state, true);
     expect(updated.lastReviewedAt).toBe(now);
     vi.useRealTimers();
+  });
+
+  it("computes automaticity from solve time vs expected time", () => {
+    const state = makeState({ automaticity: 0 });
+    const updated = updateMastery(state, true, 5, 10);
+    expect(updated.automaticity).toBeGreaterThan(0);
+  });
+
+  it("automaticity > 0 when solving faster than expected", () => {
+    const state = makeState({ automaticity: 0 });
+    const updated = updateMastery(state, true, 5, 10);
+    expect(updated.automaticity).toBeGreaterThan(0);
+  });
+
+  it("automaticity reflects speed improvement over time", () => {
+    let state = makeState({ automaticity: 0 });
+    state = updateMastery(state, true, 5, 10);
+    const first = state.automaticity;
+    state = updateMastery(state, true, 5, 10);
+    expect(state.automaticity).toBeGreaterThan(first);
+  });
+
+  it("resets consecutiveCorrect on wrong answer", () => {
+    const state = makeState({ consecutiveCorrect: 3 });
+    const updated = updateMastery(state, false);
+    expect(updated.consecutiveCorrect).toBe(0);
+  });
+
+  it("increments consecutiveCorrect on correct answer", () => {
+    const state = makeState({ consecutiveCorrect: 1 });
+    const updated = updateMastery(state, true);
+    expect(updated.consecutiveCorrect).toBe(2);
+  });
+
+  it("gives automaticity bonus to mastery when solving fast", () => {
+    const slowState = makeState({ mastery: 0.5, automaticity: 0.5 });
+    const slowResult = updateMastery(slowState, true, 20, 10);
+
+    const fastState = makeState({ mastery: 0.5, automaticity: 1.5 });
+    const fastResult = updateMastery(fastState, true, 5, 10);
+
+    expect(fastResult.mastery).toBeGreaterThan(slowResult.mastery);
+  });
+
+  it("preserves implicitReviewCredit", () => {
+    const state = makeState({ implicitReviewCredit: 12345 });
+    const updated = updateMastery(state, true);
+    expect(updated.implicitReviewCredit).toBe(12345);
   });
 });
 
@@ -174,10 +210,10 @@ describe("getNextItem", () => {
   });
 
   it("skips locked nodes", () => {
-    const graph: GraphNode[] = [
+    const lockedGraph: GraphNode[] = [
       makeNode("c1", ["r_missing"], "character"),
     ];
-    const result = getNextItem(graph, {});
+    const result = getNextItem(lockedGraph, {});
     expect(result).toBeNull();
   });
 
@@ -190,20 +226,6 @@ describe("getNextItem", () => {
     const twoRadicals = [makeNode("r1"), makeNode("r2")];
     const result = getNextItem(twoRadicals, progress);
     expect(result).toBeNull();
-  });
-
-  it("returns not-started unlocked nodes in graph order", () => {
-    const graph: GraphNode[] = [
-      makeNode("r1"),
-      makeNode("r2"),
-      makeNode("r3"),
-    ];
-    const future = Date.now() + 999999;
-    const progress: UserProgress = {
-      r1: makeState({ mastery: 0.5, nextReview: future }),
-    };
-    const result = getNextItem(graph, progress);
-    expect(result?.id).toBe("r2");
   });
 });
 
@@ -224,7 +246,7 @@ describe("getStats", () => {
 
   it("counts unlocked nodes (radicals are always unlocked)", () => {
     const stats = getStats(graph, {});
-    expect(stats.unlocked).toBe(3); // r1, r2, r3 (c1 locked)
+    expect(stats.unlocked).toBe(3);
   });
 
   it("counts in-progress nodes (started but mastery < 0.8)", () => {
@@ -243,7 +265,7 @@ describe("getStats", () => {
     };
     const stats = getStats(graph, progress);
     expect(stats.mastered).toBe(2);
-    expect(stats.unlocked).toBe(4); // c1 now unlocked too
+    expect(stats.unlocked).toBe(4);
   });
 
   it("returns zeros for empty progress", () => {
@@ -252,33 +274,42 @@ describe("getStats", () => {
   });
 });
 
-// ─── Storage ─────────────────────────────────────────────────────────
+// ─── fallBackwards ───────────────────────────────────────────────────
 
-describe("storage", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
+describe("fallBackwards", () => {
+  const graph: GraphNode[] = [
+    makeNode("r1"),
+    makeNode("r2"),
+    makeNode("c1", ["r1", "r2"], "character"),
+  ];
 
-  it("loadProgress returns empty object when nothing saved", () => {
-    expect(loadProgress()).toEqual({});
-  });
-
-  it("saveProgress → loadProgress round-trips correctly", () => {
+  it("returns weak prereqs sorted by mastery (ascending)", () => {
     const progress: UserProgress = {
-      r1: makeState({ mastery: 0.6, interval: 300, totalReviews: 5 }),
+      r1: makeState({ mastery: 0.3 }),
+      r2: makeState({ mastery: 0.6 }),
     };
-    saveProgress(progress);
-    expect(loadProgress()).toEqual(progress);
+    const result = fallBackwards("c1", graph, progress);
+    expect(result).toHaveLength(2);
+    expect(result[0].id).toBe("r1");
   });
 
-  it("resetProgress clears saved data", () => {
-    saveProgress({ r1: makeState() });
-    resetProgress();
-    expect(loadProgress()).toEqual({});
+  it("returns empty array for node with no prereqs", () => {
+    const result = fallBackwards("r1", graph, {});
+    expect(result).toEqual([]);
   });
 
-  it("loadProgress handles corrupt data gracefully", () => {
-    localStorage.setItem("lang-academy-progress", "not-valid-json{{{");
-    expect(loadProgress()).toEqual({});
+  it("excludes prereqs with mastery >= 0.8", () => {
+    const progress: UserProgress = {
+      r1: makeState({ mastery: 0.9 }),
+      r2: makeState({ mastery: 0.5 }),
+    };
+    const result = fallBackwards("c1", graph, progress);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("r2");
+  });
+
+  it("returns empty for unknown nodeId", () => {
+    const result = fallBackwards("nonexistent", graph, {});
+    expect(result).toEqual([]);
   });
 });

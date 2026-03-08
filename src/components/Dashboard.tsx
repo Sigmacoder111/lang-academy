@@ -3,7 +3,7 @@ import type { XPState } from "../types/tasks";
 import type { UserProgress } from "../types/state";
 import type { GraphNode } from "../types/graph";
 import { selectTasks, getTaskTypeInfo } from "../engine/tasks";
-import { getStats } from "../engine/srs";
+import { getStats } from "../engine/mastery";
 import XPBar from "./XPBar";
 
 interface DashboardProps {
