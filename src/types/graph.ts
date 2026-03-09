@@ -1,11 +1,18 @@
 export type NodeType = "radical" | "character" | "word" | "grammar" | "reading" | "writing";
 
+export type QuestionType = "standard" | "cloze" | "sentence_order" | "passage_comprehension" | "pattern_match";
+
 export interface PracticeProblem {
   question: string;
   options: string[];
   correctIndex: number;
   explanation: string;
   expectedSeconds: number;
+  questionType?: QuestionType;
+  passage?: string;
+  passagePinyin?: string;
+  modelResponse?: string;
+  rubric?: string[];
 }
 
 export interface Lesson {

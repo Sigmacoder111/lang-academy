@@ -26,6 +26,8 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
   const [timerActive, setTimerActive] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
   const [bonusXP, setBonusXP] = useState(0);
+  const [showPinyin, setShowPinyin] = useState(false);
+  const [showModelResponse, setShowModelResponse] = useState(false);
 
   useEffect(() => {
     if (!timerActive) return;
@@ -52,6 +54,7 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
   }, [selectedAnswer, questions, currentQ, topic]);
 
   const advanceQuestion = useCallback(() => {
+    setShowModelResponse(false);
     if (consecutiveCorrect >= 2 && currentQ >= 1) {
       const perfect = totalCorrect === totalAnswered;
       const base = 10;
@@ -146,6 +149,53 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
                 )}
               </>
             )}
+            {topic.type === "grammar" && (
+              <>
+                <p>
+                  The grammar pattern <strong style={{ fontFamily: "'Noto Serif SC', serif" }}>{topic.hanzi}</strong> ({topic.pinyin})
+                  is used to express "{topic.meaning}".
+                </p>
+                <p>
+                  This pattern is essential for constructing natural-sounding Chinese sentences.
+                  Understanding when and how to apply it will significantly improve your communication ability.
+                </p>
+                {prereqNodes.length > 0 && (
+                  <p>
+                    Key vocabulary used in this pattern:{" "}
+                    {prereqNodes.map((n, i) => (
+                      <span key={n.id}>
+                        {i > 0 && ", "}
+                        <strong style={{ fontFamily: "'Noto Serif SC', serif" }}>{n.hanzi}</strong> ({n.meaning})
+                      </span>
+                    ))}
+                  </p>
+                )}
+              </>
+            )}
+            {topic.type === "reading" && (
+              <>
+                <p>
+                  This lesson focuses on reading comprehension: <strong>{topic.meaning}</strong>.
+                </p>
+                <p>
+                  You'll practice reading a Chinese passage and answering comprehension questions.
+                  Focus on identifying main ideas, supporting details, and the author's purpose.
+                  A pinyin overlay is available if you need help with pronunciation.
+                </p>
+              </>
+            )}
+            {topic.type === "writing" && (
+              <>
+                <p>
+                  This lesson focuses on writing practice: <strong>{topic.meaning.replace("Writing: ", "")}</strong>.
+                </p>
+                <p>
+                  You'll learn the structure and key elements of this writing format.
+                  After seeing a model response, you'll answer questions about proper writing techniques.
+                  Pay attention to tone, structure, and appropriate vocabulary.
+                </p>
+              </>
+            )}
           </div>
 
           <button onClick={() => setPhase("worked-example")} style={primaryButtonStyle}>
@@ -164,48 +214,117 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
           <PhaseBadge label="Worked Example" />
 
           <div style={{ marginBottom: "1.5rem" }}>
-            <div style={{ ...tutorialTextStyle, marginBottom: "1rem" }}>
-              <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
-                Example: What does "{topic.hanzi}" mean?
-              </p>
-            </div>
-
-            <div
-              style={{
-                background: "rgba(0,0,0,0.03)",
-                borderRadius: "0.75rem",
-                padding: "1.25rem",
-              }}
-            >
-              <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "14px", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
-                Step 1: Look at the character
-              </div>
-              <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: "2rem", textAlign: "center", margin: "0.75rem 0", color: "var(--text-primary)" }}>
-                {topic.hanzi}
-              </div>
-
-              {prereqNodes.length > 0 && (
-                <>
-                  <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "14px", color: "var(--text-muted)", marginBottom: "0.5rem", marginTop: "1rem" }}>
-                    Step 2: Identify the components
+            {(topic.type === "radical" || topic.type === "character" || topic.type === "word") && (
+              <>
+                <div style={{ ...tutorialTextStyle, marginBottom: "1rem" }}>
+                  <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
+                    Example: What does "{topic.hanzi}" mean?
+                  </p>
+                </div>
+                <div style={exampleBoxStyle}>
+                  <div style={stepLabelStyle}>Step 1: Look at the character</div>
+                  <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: "2rem", textAlign: "center", margin: "0.75rem 0", color: "var(--text-primary)" }}>
+                    {topic.hanzi}
                   </div>
+                  {prereqNodes.length > 0 && (
+                    <>
+                      <div style={{ ...stepLabelStyle, marginTop: "1rem" }}>Step 2: Identify the components</div>
+                      <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "15px", color: "var(--text-primary)" }}>
+                        {prereqNodes.map((n) => (
+                          <span key={n.id} style={{ marginRight: "1rem" }}>
+                            <span style={{ fontFamily: "'Noto Serif SC', serif" }}>{n.hanzi}</span> = {n.meaning}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  <div style={{ ...stepLabelStyle, marginTop: "1rem" }}>
+                    Step {prereqNodes.length > 0 ? "3" : "2"}: The answer
+                  </div>
+                  <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "15px", color: "var(--success)", fontWeight: 600 }}>
+                    {topic.hanzi} ({topic.pinyin}) = "{topic.meaning}"
+                  </div>
+                </div>
+              </>
+            )}
+
+            {topic.type === "grammar" && (
+              <>
+                <div style={{ ...tutorialTextStyle, marginBottom: "1rem" }}>
+                  <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
+                    Example: Using the pattern "{topic.hanzi}"
+                  </p>
+                </div>
+                <div style={exampleBoxStyle}>
+                  <div style={stepLabelStyle}>Step 1: Understand the pattern</div>
+                  <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: "1.5rem", textAlign: "center", margin: "0.75rem 0", color: "var(--text-primary)" }}>
+                    {topic.hanzi}
+                  </div>
+                  <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "14px", color: "var(--text-muted)", textAlign: "center", marginBottom: "1rem" }}>
+                    {topic.pinyin} — "{topic.meaning}"
+                  </div>
+                  <div style={{ ...stepLabelStyle, marginTop: "1rem" }}>Step 2: See it in context</div>
+                  <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "15px", color: "var(--text-primary)", padding: "0.5rem 0" }}>
+                    {topic.lesson.workedExample.problem}
+                  </div>
+                  <div style={{ ...stepLabelStyle, marginTop: "1rem" }}>Step 3: Explanation</div>
+                  <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "15px", color: "var(--success)", fontWeight: 600 }}>
+                    {topic.lesson.workedExample.solution}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {topic.type === "reading" && (
+              <>
+                <div style={{ ...tutorialTextStyle, marginBottom: "1rem" }}>
+                  <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
+                    Reading Strategy: {topic.meaning.replace(" passage", "")}
+                  </p>
+                </div>
+                <div style={exampleBoxStyle}>
+                  <div style={stepLabelStyle}>Step 1: Read the passage carefully</div>
+                  <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: "1.1rem", lineHeight: 1.8, color: "var(--text-primary)", margin: "0.75rem 0", padding: "0.5rem", background: "rgba(0,0,0,0.02)", borderRadius: "0.5rem" }}>
+                    {topic.lesson.workedExample.problem}
+                  </div>
+                  <div style={{ ...stepLabelStyle, marginTop: "1rem" }}>Step 2: Identify key information</div>
                   <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "15px", color: "var(--text-primary)" }}>
-                    {prereqNodes.map((n) => (
-                      <span key={n.id} style={{ marginRight: "1rem" }}>
-                        <span style={{ fontFamily: "'Noto Serif SC', serif" }}>{n.hanzi}</span> = {n.meaning}
-                      </span>
-                    ))}
+                    Look for: main idea, supporting details, key vocabulary, and the author's tone.
                   </div>
-                </>
-              )}
+                  <div style={{ ...stepLabelStyle, marginTop: "1rem" }}>Step 3: Answer comprehension questions</div>
+                  <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "15px", color: "var(--success)", fontWeight: 600 }}>
+                    {topic.lesson.workedExample.solution}
+                  </div>
+                </div>
+              </>
+            )}
 
-              <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "14px", color: "var(--text-muted)", marginBottom: "0.5rem", marginTop: "1rem" }}>
-                Step {prereqNodes.length > 0 ? "3" : "2"}: The answer
-              </div>
-              <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "15px", color: "var(--success)", fontWeight: 600 }}>
-                {topic.hanzi} ({topic.pinyin}) = "{topic.meaning}"
-              </div>
-            </div>
+            {topic.type === "writing" && (
+              <>
+                <div style={{ ...tutorialTextStyle, marginBottom: "1rem" }}>
+                  <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
+                    Writing Guide: {topic.meaning.replace("Writing: ", "")}
+                  </p>
+                </div>
+                <div style={exampleBoxStyle}>
+                  <div style={stepLabelStyle}>Step 1: Understand the task</div>
+                  <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "15px", color: "var(--text-primary)", margin: "0.5rem 0" }}>
+                    {topic.lesson.workedExample.problem}
+                  </div>
+                  <div style={{ ...stepLabelStyle, marginTop: "1rem" }}>Step 2: Review the model response</div>
+                  <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: "1rem", lineHeight: 1.8, color: "var(--text-primary)", margin: "0.5rem 0", padding: "0.75rem", background: "rgba(74, 140, 111, 0.06)", borderRadius: "0.5rem", borderLeft: "3px solid var(--success)" }}>
+                    {topic.lesson.workedExample.solution}
+                  </div>
+                  <div style={{ ...stepLabelStyle, marginTop: "1rem" }}>Step 3: Key rubric points</div>
+                  <ul style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "14px", color: "var(--text-primary)", paddingLeft: "1.25rem", margin: "0.25rem 0" }}>
+                    <li>Clear structure and organization</li>
+                    <li>Appropriate vocabulary and grammar</li>
+                    <li>Addresses all parts of the prompt</li>
+                    <li>Proper tone for the context</li>
+                  </ul>
+                </div>
+              </>
+            )}
           </div>
 
           <button
@@ -225,6 +344,7 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
   if (phase === "practice" && questions.length > 0 && currentQ < questions.length) {
     const q = questions[currentQ];
     const isCorrect = selectedAnswer !== null && selectedAnswer === q.correctIndex;
+    const qType = q.questionType || "standard";
 
     return (
       <div style={containerStyle}>
@@ -233,19 +353,105 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
             <PhaseBadge label="Practice" />
             <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "13px", color: "var(--text-muted)" }}>
-              ⏱ {timer}s
+              {timer}s
             </div>
           </div>
 
-          {/* Streak indicator */}
           <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "13px", color: "var(--text-muted)", marginBottom: "1rem" }}>
             {consecutiveCorrect > 0
               ? `${consecutiveCorrect}/2 correct in a row`
               : "Get 2 correct in a row to complete"}
           </div>
 
-          {/* Question */}
-          {q.hanzi && (
+          {/* Passage display for reading comprehension */}
+          {qType === "passage_comprehension" && q.passage && (
+            <div style={{ marginBottom: "1.25rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-muted)" }}>
+                  Passage
+                </span>
+                {q.passagePinyin && (
+                  <button
+                    onClick={() => setShowPinyin(!showPinyin)}
+                    style={{
+                      fontFamily: "Georgia, 'Times New Roman', serif",
+                      fontSize: "12px",
+                      color: showPinyin ? "var(--accent)" : "var(--text-muted)",
+                      background: showPinyin ? "rgba(193, 95, 60, 0.1)" : "transparent",
+                      border: "1px solid var(--border)",
+                      borderRadius: "9999px",
+                      padding: "0.25rem 0.75rem",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    {showPinyin ? "Hide Pinyin" : "Show Pinyin"}
+                  </button>
+                )}
+              </div>
+              <div style={{
+                fontFamily: "'Noto Serif SC', serif",
+                fontSize: "1.05rem",
+                lineHeight: 2,
+                color: "var(--text-primary)",
+                padding: "1rem",
+                background: "rgba(0,0,0,0.02)",
+                borderRadius: "0.75rem",
+                borderLeft: "3px solid var(--accent)",
+              }}>
+                {q.passage}
+                {showPinyin && q.passagePinyin && (
+                  <div style={{
+                    fontFamily: "Georgia, 'Times New Roman', serif",
+                    fontSize: "0.85rem",
+                    color: "var(--text-muted)",
+                    marginTop: "0.75rem",
+                    paddingTop: "0.75rem",
+                    borderTop: "1px solid var(--border)",
+                    lineHeight: 1.8,
+                  }}>
+                    {q.passagePinyin}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Pattern display for pattern_match questions */}
+          {qType === "pattern_match" && q.hanzi && (
+            <div style={{
+              fontFamily: "'Noto Serif SC', serif",
+              fontSize: "1.25rem",
+              textAlign: "center",
+              color: "var(--accent)",
+              padding: "0.75rem",
+              margin: "0 0 1rem",
+              background: "rgba(193, 95, 60, 0.06)",
+              borderRadius: "0.5rem",
+              fontWeight: 600,
+            }}>
+              Pattern: {q.hanzi}
+            </div>
+          )}
+
+          {/* Cloze sentence display */}
+          {qType === "cloze" && q.hanzi && (
+            <div style={{
+              fontFamily: "'Noto Serif SC', serif",
+              fontSize: "1.5rem",
+              textAlign: "center",
+              color: "var(--text-primary)",
+              margin: "0.5rem 0 1rem",
+              padding: "0.75rem",
+              background: "rgba(0,0,0,0.02)",
+              borderRadius: "0.5rem",
+            }}>
+              {q.hanzi}
+            </div>
+          )}
+
+          {/* Standard hanzi display */}
+          {qType === "standard" && q.hanzi && (
             <div
               style={{
                 fontFamily: "'Noto Serif SC', serif",
@@ -258,6 +464,8 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
               {q.hanzi}
             </div>
           )}
+
+          {/* Question text */}
           <div
             style={{
               fontFamily: "Georgia, 'Times New Roman', serif",
@@ -310,13 +518,13 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
                     opacity: selectedAnswer !== null && idx !== q.correctIndex && idx !== selectedAnswer ? 0.5 : 1,
                   }}
                 >
-                  {opt}
+                  {qType === "sentence_order" ? `${idx + 1}. ${opt}` : opt}
                 </button>
               );
             })}
           </div>
 
-          {/* Explanation */}
+          {/* Explanation + Model Response for writing */}
           {showExplanation && (
             <div
               style={{
@@ -347,6 +555,57 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
               >
                 {q.explanation}
               </div>
+
+              {/* Writing model response toggle */}
+              {q.modelResponse && (
+                <div style={{ marginTop: "0.75rem" }}>
+                  <button
+                    onClick={() => setShowModelResponse(!showModelResponse)}
+                    style={{
+                      fontFamily: "Georgia, 'Times New Roman', serif",
+                      fontSize: "13px",
+                      color: "var(--accent)",
+                      background: "transparent",
+                      border: "1px solid var(--accent)",
+                      borderRadius: "0.375rem",
+                      padding: "0.375rem 0.75rem",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    {showModelResponse ? "Hide Model Response" : "View Model Response"}
+                  </button>
+                  {showModelResponse && (
+                    <div style={{
+                      marginTop: "0.75rem",
+                      padding: "0.75rem",
+                      background: "rgba(74, 140, 111, 0.06)",
+                      borderRadius: "0.5rem",
+                      borderLeft: "3px solid var(--success)",
+                    }}>
+                      <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+                        Model Response
+                      </div>
+                      <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: "14px", lineHeight: 1.8, color: "var(--text-primary)" }}>
+                        {q.modelResponse}
+                      </div>
+                      {q.rubric && q.rubric.length > 0 && (
+                        <div style={{ marginTop: "0.75rem", paddingTop: "0.5rem", borderTop: "1px solid var(--border)" }}>
+                          <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-muted)", marginBottom: "0.25rem" }}>
+                            Rubric Checklist
+                          </div>
+                          <ul style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "13px", color: "var(--text-primary)", paddingLeft: "1.25rem", margin: 0 }}>
+                            {q.rubric.map((item, i) => (
+                              <li key={i} style={{ marginBottom: "0.125rem" }}>{item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <button onClick={advanceQuestion} style={{ ...primaryButtonStyle, marginTop: "1rem" }}>
                 Continue
               </button>
@@ -361,7 +620,9 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
     return (
       <div style={containerStyle}>
         <div style={{ ...cardStyle, textAlign: "center" }}>
-          <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>🎉</div>
+          <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>
+            {topic.type === "grammar" ? "📝" : topic.type === "reading" ? "📖" : topic.type === "writing" ? "✍️" : "🎉"}
+          </div>
           <h2
             style={{
               fontFamily: "Georgia, 'Times New Roman', serif",
@@ -404,7 +665,7 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
                 animation: "fadeIn 0.5s ease 0.3s both",
               }}
             >
-              +{bonusXP} Bonus XP ✨ Perfect score!
+              +{bonusXP} Bonus XP — Perfect score!
             </div>
           )}
           <div
@@ -525,4 +786,17 @@ const primaryButtonStyle: React.CSSProperties = {
   cursor: "pointer",
   transition: "background 0.15s ease",
   width: "100%",
+};
+
+const exampleBoxStyle: React.CSSProperties = {
+  background: "rgba(0,0,0,0.03)",
+  borderRadius: "0.75rem",
+  padding: "1.25rem",
+};
+
+const stepLabelStyle: React.CSSProperties = {
+  fontFamily: "Georgia, 'Times New Roman', serif",
+  fontSize: "14px",
+  color: "var(--text-muted)",
+  marginBottom: "0.5rem",
 };

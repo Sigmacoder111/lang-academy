@@ -55,6 +55,16 @@ const SENTENCE_TEMPLATES: Record<string, string[]> = {
     "{hanzi} ({pinyin}): \"{meaning}\". This grammar pattern is fundamental at HSK level {hsk}. It appears constantly in both spoken and written Chinese. Understanding when and how to use it is crucial for natural communication.",
     "This grammar point covers {hanzi} ({pinyin}), used for \"{meaning}\". At HSK {hsk}, this is a core structure you must master. Listen for it in native speech and try to use it actively in your own sentences.",
   ],
+  reading: [
+    "This reading passage covers the topic of {hanzi} ({pinyin}). {meaning} At HSK level {hsk}, you should be able to read and comprehend passages on this topic. Focus on identifying the main idea, key details, and the author's purpose. Use context clues to understand unfamiliar words.",
+    "Reading comprehension: {hanzi} ({pinyin}). {meaning} This HSK {hsk} passage will test your ability to extract information, make inferences, and understand the overall structure. Remember to read the questions before the passage to know what to look for.",
+    "Let's practice reading about {hanzi} ({pinyin}). {meaning} As an HSK {hsk} topic, you should aim to understand both the explicit content and implied meanings. A pinyin overlay is available if you need pronunciation help.",
+  ],
+  writing: [
+    "This writing lesson covers {hanzi} ({pinyin}): {meaning}. At HSK level {hsk}, you should be able to compose this type of text. Focus on structure, appropriate vocabulary, and matching the expected tone and formality level. Review the model response to understand the standard format.",
+    "Writing practice: {hanzi} ({pinyin}). {meaning} This is an important HSK {hsk} writing skill. Pay attention to how model responses organize ideas, use transitional phrases, and maintain consistent tone. Self-assess your attempts against the rubric provided.",
+    "Learn to write {hanzi} ({pinyin}): {meaning}. This HSK {hsk} writing task requires clear organization, appropriate vocabulary, and proper grammar. Study the model response to understand expectations, then practice creating your own responses.",
+  ],
 };
 
 function generateComposition(node: NodeWithPrereqs, allNodes: Map<string, NodeWithPrereqs>): string {
@@ -117,6 +127,14 @@ const EXAMPLE_SENTENCES: Record<string, Array<{ template: string; translation: s
     { template: "Example: {hanzi} → 我是学生。(Wǒ shì xuéshēng.) — I am a student.", translation: "Apply the pattern {hanzi} in a basic sentence." },
     { template: "Example: {hanzi} → 他很高兴。(Tā hěn gāoxìng.) — He is very happy.", translation: "Apply the pattern {hanzi} with an adjective." },
   ],
+  reading: [
+    { template: "Read this short passage about {hanzi} and identify the main idea. Focus on key vocabulary and sentence structure.", translation: "Practice reading comprehension by identifying the main topic and supporting details." },
+    { template: "This passage discusses {hanzi}. Read carefully and think about what the author is trying to communicate.", translation: "Analyze the passage for both explicit information and implied meaning." },
+  ],
+  writing: [
+    { template: "Task: Write about {hanzi}. Model response: 亲爱的朋友，我想和你分享关于{hanzi}的一些想法。这个话题对我来说很重要，因为它影响着我们的日常生活。", translation: "Review the model response and note the structure: greeting, topic introduction, personal connection, and closing." },
+    { template: "Writing prompt for {hanzi}: Compose a response that addresses the topic clearly. Model: 关于{hanzi}，我认为这是一个值得讨论的话题。首先，我们需要了解它的背景。其次，我们应该考虑它的影响。", translation: "Study the model response's organizational pattern: thesis, supporting points, conclusion." },
+  ],
 };
 
 function generateWorkedExample(node: NodeWithPrereqs): { problem: string; solution: string } {
@@ -142,13 +160,22 @@ function generatePracticeProblems(
   allNodes: NodeWithPrereqs[],
   count: number
 ): PracticeProblem[] {
+  if (node.type === "grammar") {
+    return generateGrammarPractice(node, allNodes, count);
+  }
+  if (node.type === "reading") {
+    return generateReadingPractice(node, allNodes, count);
+  }
+  if (node.type === "writing") {
+    return generateWritingPractice(node, allNodes, count);
+  }
+
   const rng = seededRandom(`practice-${node.id}`);
   const problems: PracticeProblem[] = [];
   const sameType = allNodes.filter(n => n.id !== node.id && n.type === node.type);
   const distractorPool = sameType.length >= 3 ? sameType : allNodes.filter(n => n.id !== node.id);
 
   const questionTypes = [
-    // Type 1: Meaning from hanzi
     () => {
       const wrongMeanings = shuffle(distractorPool, rng).slice(0, 3).map(n => n.meaning);
       const allOptions = shuffle([node.meaning, ...wrongMeanings], rng);
@@ -160,7 +187,6 @@ function generatePracticeProblems(
         expectedSeconds: node.type === "radical" ? 10 : node.type === "character" ? 15 : 20,
       };
     },
-    // Type 2: Hanzi from meaning
     () => {
       const wrongHanzi = shuffle(distractorPool, rng).slice(0, 3).map(n => n.hanzi);
       const allOptions = shuffle([node.hanzi, ...wrongHanzi], rng);
@@ -172,7 +198,6 @@ function generatePracticeProblems(
         expectedSeconds: node.type === "radical" ? 10 : node.type === "character" ? 15 : 20,
       };
     },
-    // Type 3: Pinyin from hanzi
     () => {
       const wrongPinyin = shuffle(distractorPool, rng).slice(0, 3).map(n => n.pinyin);
       const allOptions = shuffle([node.pinyin, ...wrongPinyin], rng);
@@ -184,7 +209,6 @@ function generatePracticeProblems(
         expectedSeconds: 12,
       };
     },
-    // Type 4: Fill in the blank
     () => {
       const wrongHanzi = shuffle(distractorPool, rng).slice(0, 3).map(n => n.hanzi);
       const allOptions = shuffle([node.hanzi, ...wrongHanzi], rng);
@@ -196,7 +220,6 @@ function generatePracticeProblems(
         expectedSeconds: 20,
       };
     },
-    // Type 5: Type identification
     () => {
       if (node.type === "radical") {
         const wrongOptions = ["character", "word", "grammar pattern"];
@@ -227,7 +250,6 @@ function generatePracticeProblems(
     if (problem.options.length === 4 && problem.correctIndex >= 0 && problem.correctIndex < 4) {
       problems.push(problem);
     } else {
-      // Fallback
       const wrongMeanings = shuffle(distractorPool, rng).slice(0, 3).map(n => n.meaning);
       const allOptions = shuffle([node.meaning, ...wrongMeanings], rng);
       problems.push({
@@ -240,6 +262,261 @@ function generatePracticeProblems(
     }
   }
 
+  return problems;
+}
+
+function generateGrammarPractice(
+  node: NodeWithPrereqs,
+  allNodes: NodeWithPrereqs[],
+  count: number
+): PracticeProblem[] {
+  const rng = seededRandom(`grammar-practice-${node.id}`);
+  const problems: PracticeProblem[] = [];
+  const grammarPool = allNodes.filter(n => n.id !== node.id && n.type === "grammar");
+  const pool = grammarPool.length >= 3 ? grammarPool : allNodes.filter(n => n.id !== node.id);
+
+  const generators: Array<() => PracticeProblem> = [
+    () => {
+      const wrongMeanings = shuffle(pool, rng).slice(0, 3).map(n => n.meaning);
+      const allOptions = shuffle([node.meaning, ...wrongMeanings], rng);
+      return {
+        question: `Fill in the blank: The pattern "${node.hanzi}" is used to express ____.`,
+        options: allOptions,
+        correctIndex: allOptions.indexOf(node.meaning),
+        explanation: `${node.hanzi} (${node.pinyin}) expresses "${node.meaning}".`,
+        expectedSeconds: 20,
+        questionType: "cloze" as const,
+      };
+    },
+    () => {
+      const wrongPatterns = shuffle(pool, rng).slice(0, 3).map(n => n.hanzi);
+      const allOptions = shuffle([node.hanzi, ...wrongPatterns], rng);
+      return {
+        question: `Which grammar pattern means "${node.meaning}"?`,
+        options: allOptions,
+        correctIndex: allOptions.indexOf(node.hanzi),
+        explanation: `"${node.meaning}" is expressed using ${node.hanzi} (${node.pinyin}).`,
+        expectedSeconds: 20,
+        questionType: "pattern_match" as const,
+      };
+    },
+    () => {
+      const wrongMeanings = shuffle(pool, rng).slice(0, 3).map(n => n.meaning);
+      const allOptions = shuffle([node.meaning, ...wrongMeanings], rng);
+      return {
+        question: `What does the grammar pattern "${node.hanzi}" (${node.pinyin}) express?`,
+        options: allOptions,
+        correctIndex: allOptions.indexOf(node.meaning),
+        explanation: `${node.hanzi} (${node.pinyin}) is used for "${node.meaning}".`,
+        expectedSeconds: 15,
+        questionType: "standard" as const,
+      };
+    },
+    () => {
+      const wrongPatterns = shuffle(pool, rng).slice(0, 3).map(n => n.hanzi);
+      const allOptions = shuffle([node.hanzi, ...wrongPatterns], rng);
+      return {
+        question: `Which pattern correctly expresses "${node.meaning}"?`,
+        options: allOptions,
+        correctIndex: allOptions.indexOf(node.hanzi),
+        explanation: `${node.hanzi} is the correct pattern for "${node.meaning}".`,
+        expectedSeconds: 20,
+        questionType: "pattern_match" as const,
+      };
+    },
+  ];
+
+  for (let i = 0; i < count; i++) {
+    problems.push(generators[i % generators.length]());
+  }
+  return problems;
+}
+
+const READING_PASSAGES: Record<string, { passage: string; passagePinyin: string }> = {
+  default_1: {
+    passage: "今天天气很好。我和朋友一起去公园散步。公园里有很多花和树。我们在湖边坐了一会儿，聊了很多有趣的事情。",
+    passagePinyin: "Jīntiān tiānqì hěn hǎo. Wǒ hé péngyou yīqǐ qù gōngyuán sànbù. Gōngyuán lǐ yǒu hěn duō huā hé shù. Wǒmen zài hú biān zuò le yīhuǐr, liáo le hěn duō yǒuqù de shìqing.",
+  },
+  default_2: {
+    passage: "中国有很多传统节日。春节是最重要的节日。人们会回家和家人团聚，一起吃饺子，看烟花。孩子们最喜欢收到压岁钱。",
+    passagePinyin: "Zhōngguó yǒu hěn duō chuántǒng jiérì. Chūnjié shì zuì zhòngyào de jiérì. Rénmen huì huí jiā hé jiārén tuánjù, yīqǐ chī jiǎozi, kàn yānhua. Háizimen zuì xǐhuan shōu dào yāsuìqián.",
+  },
+  default_3: {
+    passage: "学习一门新语言需要时间和耐心。每天练习一点点，比一次学很多更有效。听、说、读、写都很重要，不能只练习其中一个方面。",
+    passagePinyin: "Xuéxí yī mén xīn yǔyán xūyào shíjiān hé nàixīn. Měi tiān liànxí yī diǎndiǎn, bǐ yī cì xué hěn duō gèng yǒuxiào. Tīng, shuō, dú, xiě dōu hěn zhòngyào, bù néng zhǐ liànxí qízhōng yī gè fāngmiàn.",
+  },
+};
+
+function generateReadingPractice(
+  node: NodeWithPrereqs,
+  allNodes: NodeWithPrereqs[],
+  count: number
+): PracticeProblem[] {
+  const rng = seededRandom(`reading-practice-${node.id}`);
+  const problems: PracticeProblem[] = [];
+  const readingPool = allNodes.filter(n => n.id !== node.id && n.type === "reading");
+  const pool = readingPool.length >= 3 ? readingPool : allNodes.filter(n => n.id !== node.id);
+
+  const passageKeys = Object.keys(READING_PASSAGES);
+  const selectedKey = passageKeys[Math.floor(rng() * passageKeys.length)];
+  const { passage, passagePinyin } = READING_PASSAGES[selectedKey];
+
+  const topicLabel = node.meaning.replace(" passage", "");
+
+  const generators: Array<() => PracticeProblem> = [
+    () => {
+      const wrongTopics = shuffle(pool, rng).slice(0, 3).map(n =>
+        n.type === "reading" ? n.meaning.replace(" passage", "") : n.meaning
+      );
+      const allOptions = shuffle([topicLabel, ...wrongTopics], rng);
+      return {
+        question: "What is the main topic of this passage?",
+        options: allOptions,
+        correctIndex: allOptions.indexOf(topicLabel),
+        explanation: `This passage is about ${node.hanzi} (${topicLabel}).`,
+        expectedSeconds: 30,
+        questionType: "passage_comprehension" as const,
+        passage,
+        passagePinyin,
+      };
+    },
+    () => {
+      const allOptions = shuffle([
+        `To introduce ${topicLabel.toLowerCase()}`,
+        "To tell a personal story",
+        "To argue against a policy",
+        "To describe a historical event",
+      ], rng);
+      return {
+        question: "What is the author's purpose in writing this passage?",
+        options: allOptions,
+        correctIndex: allOptions.indexOf(`To introduce ${topicLabel.toLowerCase()}`),
+        explanation: `The passage is written to introduce the topic of ${node.hanzi}.`,
+        expectedSeconds: 25,
+        questionType: "passage_comprehension" as const,
+        passage,
+        passagePinyin,
+      };
+    },
+    () => {
+      const allOptions = shuffle([
+        "True - the passage discusses this topic",
+        "False - the passage discusses a different topic",
+        "Not mentioned in the passage",
+        "The passage contradicts this",
+      ], rng);
+      return {
+        question: `Based on the passage, is "${node.hanzi}" the main subject discussed?`,
+        options: allOptions,
+        correctIndex: allOptions.indexOf("True - the passage discusses this topic"),
+        explanation: `Yes, ${node.hanzi} (${node.meaning}) is the main subject.`,
+        expectedSeconds: 20,
+        questionType: "passage_comprehension" as const,
+        passage,
+        passagePinyin,
+      };
+    },
+  ];
+
+  for (let i = 0; i < count; i++) {
+    problems.push(generators[i % generators.length]());
+  }
+  return problems;
+}
+
+function generateWritingPractice(
+  node: NodeWithPrereqs,
+  allNodes: NodeWithPrereqs[],
+  count: number
+): PracticeProblem[] {
+  const rng = seededRandom(`writing-practice-${node.id}`);
+  const problems: PracticeProblem[] = [];
+  const writingPool = allNodes.filter(n => n.id !== node.id && n.type === "writing");
+  const pool = writingPool.length >= 3 ? writingPool : allNodes.filter(n => n.id !== node.id);
+
+  const writingType = node.meaning.replace("Writing: ", "");
+  const modelResponse = `亲爱的朋友，关于${node.hanzi}这个话题，我想和你分享一些想法。首先，这是一个很有意义的话题。其次，我们可以从多个角度来思考。最后，希望我的分享对你有所帮助。`;
+  const rubric = [
+    "Clear opening that states the purpose",
+    "Logical organization with transitions",
+    "Appropriate vocabulary for the context",
+    "Correct grammar and sentence structure",
+  ];
+
+  const generators: Array<() => PracticeProblem> = [
+    () => {
+      const allOptions = shuffle([
+        "Opening greeting and purpose statement",
+        "A list of unrelated facts",
+        "A poem about nature",
+        "A mathematical formula",
+      ], rng);
+      return {
+        question: `When writing a ${writingType.toLowerCase()}, what should you include first?`,
+        options: allOptions,
+        correctIndex: allOptions.indexOf("Opening greeting and purpose statement"),
+        explanation: `A good ${writingType.toLowerCase()} starts with a clear opening that states the purpose.`,
+        expectedSeconds: 15,
+        questionType: "standard" as const,
+        modelResponse,
+        rubric,
+      };
+    },
+    () => {
+      const wrongTypes = shuffle(pool, rng).slice(0, 3).map(n => n.meaning.replace("Writing: ", ""));
+      const allOptions = shuffle([writingType, ...wrongTypes], rng);
+      return {
+        question: "Which type of writing task does this model response demonstrate?",
+        options: allOptions,
+        correctIndex: allOptions.indexOf(writingType),
+        explanation: `This is an example of ${writingType}.`,
+        expectedSeconds: 20,
+        questionType: "standard" as const,
+        modelResponse,
+        rubric,
+      };
+    },
+    () => {
+      const allOptions = shuffle([
+        "Formal and polite",
+        "Casual slang only",
+        "Only single-character words",
+        "English mixed with Chinese",
+      ], rng);
+      return {
+        question: `What tone is most appropriate for ${writingType.toLowerCase()}?`,
+        options: allOptions,
+        correctIndex: allOptions.indexOf("Formal and polite"),
+        explanation: `${writingType} typically requires a formal and polite tone.`,
+        expectedSeconds: 15,
+        questionType: "standard" as const,
+        modelResponse,
+        rubric,
+      };
+    },
+    () => {
+      const allOptions = shuffle([
+        "Introduction, body paragraphs, conclusion",
+        "Random sentences with no connection",
+        "Only questions with no answers",
+        "A single very long sentence",
+      ], rng);
+      return {
+        question: `What is the best structure for ${writingType.toLowerCase()}?`,
+        options: allOptions,
+        correctIndex: allOptions.indexOf("Introduction, body paragraphs, conclusion"),
+        explanation: `Good writing follows a clear structure: introduction, body paragraphs, and conclusion.`,
+        expectedSeconds: 15,
+        questionType: "standard" as const,
+        modelResponse,
+        rubric,
+      };
+    },
+  ];
+
+  for (let i = 0; i < count; i++) {
+    problems.push(generators[i % generators.length]());
+  }
   return problems;
 }
 
@@ -262,7 +539,12 @@ export function generateLessons(nodes: NodeWithPrereqs[]): NodeWithLesson[] {
     const node = nodes[i];
     const tutorial = generateTutorial(node, nodeMap);
     const workedExample = generateWorkedExample(node);
-    const practiceProblems = generatePracticeProblems(node, nodes, node.type === "radical" ? 3 : 4);
+    const problemCount = node.type === "radical" ? 3
+      : node.type === "reading" ? 4
+      : node.type === "writing" ? 4
+      : node.type === "grammar" ? 4
+      : 4;
+    const practiceProblems = generatePracticeProblems(node, nodes, problemCount);
 
     result.push({
       ...node,

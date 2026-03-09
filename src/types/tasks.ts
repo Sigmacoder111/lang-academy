@@ -63,6 +63,11 @@ export interface MCQuestion {
   correctIndex: number;
   explanation: string;
   topicId: string;
+  questionType?: "standard" | "cloze" | "sentence_order" | "passage_comprehension" | "pattern_match";
+  passage?: string;
+  passagePinyin?: string;
+  modelResponse?: string;
+  rubric?: string[];
 }
 
 export interface SessionStats {

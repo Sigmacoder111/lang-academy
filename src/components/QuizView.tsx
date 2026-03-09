@@ -162,12 +162,12 @@ export default function QuizView({ topic, progress, onComplete, onBack }: QuizVi
   const q = questions[currentQ];
   const isCorrect = selectedAnswer !== null && selectedAnswer === q.correctIndex;
   const timeWarning = timeRemaining < 60;
+  const qType = q.questionType || "standard";
 
   return (
     <div style={containerStyle}>
       <button onClick={onBack} style={backButtonStyle}>← Back</button>
       <div style={cardStyle}>
-        {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
           <span style={{ ...badgeStyle, background: "var(--xp-gold)" }}>Quiz</span>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -183,17 +183,41 @@ export default function QuizView({ topic, progress, onComplete, onBack }: QuizVi
                 transition: "color 0.3s ease",
               }}
             >
-              ⏱ {formatTime(timeRemaining)}
+              {formatTime(timeRemaining)}
             </span>
           </div>
         </div>
 
-        {/* Progress bar */}
         <div style={{ width: "100%", height: "4px", borderRadius: "2px", background: "rgba(0,0,0,0.06)", marginBottom: "1.25rem", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${((currentQ + (selectedAnswer !== null ? 1 : 0)) / questions.length) * 100}%`, background: "var(--xp-gold)", borderRadius: "2px", transition: "width 0.3s ease" }} />
         </div>
 
-        {q.hanzi && (
+        {/* Passage for reading comprehension */}
+        {qType === "passage_comprehension" && q.passage && (
+          <div style={{ marginBottom: "1.25rem" }}>
+            <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-muted)", marginBottom: "0.5rem" }}>Passage</div>
+            <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: "1.05rem", lineHeight: 2, color: "var(--text-primary)", padding: "1rem", background: "rgba(0,0,0,0.02)", borderRadius: "0.75rem", borderLeft: "3px solid var(--xp-gold)" }}>
+              {q.passage}
+            </div>
+          </div>
+        )}
+
+        {/* Pattern display */}
+        {qType === "pattern_match" && q.hanzi && (
+          <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: "1.25rem", textAlign: "center", color: "var(--accent)", padding: "0.75rem", margin: "0 0 1rem", background: "rgba(193, 95, 60, 0.06)", borderRadius: "0.5rem", fontWeight: 600 }}>
+            Pattern: {q.hanzi}
+          </div>
+        )}
+
+        {/* Cloze display */}
+        {qType === "cloze" && q.hanzi && (
+          <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: "1.5rem", textAlign: "center", color: "var(--text-primary)", margin: "0.5rem 0 1rem", padding: "0.75rem", background: "rgba(0,0,0,0.02)", borderRadius: "0.5rem" }}>
+            {q.hanzi}
+          </div>
+        )}
+
+        {/* Standard hanzi */}
+        {(qType === "standard" || !qType) && q.hanzi && (
           <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: "3rem", textAlign: "center", color: "var(--text-primary)", margin: "0.5rem 0 1rem" }}>
             {q.hanzi}
           </div>
