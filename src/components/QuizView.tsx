@@ -23,7 +23,7 @@ export default function QuizView({ topic, progress, onComplete, onBack }: QuizVi
     const topics = masteredTopics.length >= 3 ? masteredTopics : [topic, ...GRAPH.slice(0, 4)];
     return generateMixedQuestions(topics, GRAPH, QUIZ_QUESTIONS);
   }, [topic, progress]);
-  const [questions] = useState<MCQuestion[]>(initialQuestions);
+  const [questions, setQuestions] = useState<MCQuestion[]>(initialQuestions);
   const [currentQ, setCurrentQ] = useState(0);
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -88,6 +88,24 @@ export default function QuizView({ topic, progress, onComplete, onBack }: QuizVi
     });
   }, [onComplete, currentQ, selectedAnswer, questions.length, totalCorrect, missedTopics]);
 
+  const handleRetake = useCallback(() => {
+    const newQs = (() => {
+      const masteredTopics = GRAPH.filter(
+        (n) => progress[n.id] && progress[n.id].mastery >= 0.5
+      );
+      const topics = masteredTopics.length >= 3 ? masteredTopics : [topic, ...GRAPH.slice(0, 4)];
+      return generateMixedQuestions(topics, GRAPH, QUIZ_QUESTIONS);
+    })();
+    setQuestions(newQs);
+    setCurrentQ(0);
+    setTotalCorrect(0);
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setTimeRemaining(QUIZ_TIME_SECONDS);
+    setDone(false);
+    setMissedTopics([]);
+  }, [topic, progress]);
+
   if (done) {
     const answered = Math.min(currentQ + (selectedAnswer !== null ? 1 : 0), questions.length);
     const perfect = totalCorrect === answered && answered === questions.length;
@@ -118,9 +136,22 @@ export default function QuizView({ topic, progress, onComplete, onBack }: QuizVi
               {missedTopics.length} topic{missedTopics.length > 1 ? "s" : ""} queued for review
             </div>
           )}
-          <button onClick={handleComplete} style={{ ...primaryButtonStyle, marginTop: "1.5rem" }}>
-            Back to Dashboard
-          </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "1.5rem" }}>
+            <button onClick={handleComplete} style={primaryButtonStyle}>
+              Back to Dashboard
+            </button>
+            <button
+              onClick={handleRetake}
+              style={{
+                ...primaryButtonStyle,
+                background: "transparent",
+                color: "var(--accent)",
+                border: "1px solid var(--accent)",
+              }}
+            >
+              Retake Quiz
+            </button>
+          </div>
         </div>
       </div>
     );

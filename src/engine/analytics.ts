@@ -156,6 +156,36 @@ export function getGraphLayers(graph: GraphNode[]): LayerInfo[] {
   return layers;
 }
 
+export function getHSKLayers(graph: GraphNode[]): LayerInfo[] {
+  const hskGroups = new Map<number, GraphNode[]>();
+  const noLevel: GraphNode[] = [];
+
+  for (const node of graph) {
+    const level = node.hskLevel;
+    if (level != null) {
+      const group = hskGroups.get(level);
+      if (group) group.push(node);
+      else hskGroups.set(level, [node]);
+    } else {
+      noLevel.push(node);
+    }
+  }
+
+  const layers: LayerInfo[] = [];
+  const sortedLevels = [...hskGroups.keys()].sort((a, b) => a - b);
+  for (const level of sortedLevels) {
+    layers.push({
+      id: `hsk${level}`,
+      label: `HSK ${level}`,
+      nodes: hskGroups.get(level)!,
+    });
+  }
+  if (noLevel.length > 0) {
+    layers.push({ id: "foundations", label: "Foundations", nodes: noLevel });
+  }
+  return layers;
+}
+
 // --- Foundational Gap Detection ---
 
 export interface GapTopic {
