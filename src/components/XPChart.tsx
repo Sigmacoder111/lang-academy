@@ -1,12 +1,22 @@
 import { useMemo } from "react";
 import type { XPState } from "../types/tasks";
 import { loadXPHistory } from "../engine/analytics";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ReferenceLine,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 
 interface Props {
   xpState: XPState;
 }
 
-const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const CHART_DAYS = 28;
 
 export default function XPChart({ xpState }: Props) {
@@ -20,8 +30,9 @@ export default function XPChart({ xpState }: Props) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().slice(0, 10);
-      const dayOfWeek = d.getDay();
-      const label = DAY_LABELS[dayOfWeek === 0 ? 6 : dayOfWeek - 1];
+      const dayNum = d.getDate();
+      const month = d.toLocaleDateString("en-US", { month: "short" });
+      const label = i === 0 ? "Today" : dayNum === 1 || i === CHART_DAYS - 1 ? `${month} ${dayNum}` : `${dayNum}`;
       const entry = history.find((h) => h.date === dateStr);
       days.push({
         date: dateStr,
@@ -30,22 +41,14 @@ export default function XPChart({ xpState }: Props) {
         isToday: i === 0,
       });
     }
-
     return days;
   }, [history, xpState.todayXP]);
-
-  const maxXP = useMemo(
-    () => Math.max(xpState.dailyGoal * 1.5, ...chartData.map((d) => d.xp), 1),
-    [chartData, xpState.dailyGoal]
-  );
 
   const weeklyAvg = useMemo(() => {
     const last7 = chartData.slice(-7);
     const total = last7.reduce((sum, d) => sum + d.xp, 0);
     return Math.round(total / 7);
   }, [chartData]);
-
-  const goalLineY = (1 - xpState.dailyGoal / maxXP) * 100;
 
   return (
     <section>
@@ -59,197 +62,95 @@ export default function XPChart({ xpState }: Props) {
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
           <h3 style={sectionTitleStyle}>Weekly XP</h3>
-          <div
-            style={{
-              fontFamily: "Georgia, 'Times New Roman', serif",
-              fontSize: "0.75rem",
-              color: "var(--text-muted)",
-            }}
-          >
+          <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "0.75rem", color: "var(--text-muted)" }}>
             Avg: <strong style={{ color: "var(--xp-gold)" }}>{weeklyAvg} XP/day</strong>
           </div>
         </div>
 
-        {/* Chart */}
-        <div style={{ position: "relative", paddingLeft: "2.5rem" }}>
-          {/* Y-axis labels */}
-          <div
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: "1.5rem",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              width: "2rem",
-            }}
-          >
-            <span style={axisLabelStyle}>{Math.round(maxXP)}</span>
-            <span style={axisLabelStyle}>{Math.round(maxXP / 2)}</span>
-            <span style={axisLabelStyle}>0</span>
-          </div>
-
-          {/* Bars area */}
-          <div
-            style={{
-              position: "relative",
-              height: "10rem",
-              display: "flex",
-              alignItems: "flex-end",
-              gap: "2px",
-            }}
-          >
-            {/* Daily goal line */}
-            <div
-              style={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                top: `${goalLineY}%`,
-                height: "1px",
-                borderTop: "2px dashed var(--text-muted)",
-                opacity: 0.3,
-                zIndex: 1,
-                pointerEvents: "none",
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={chartData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis
+              dataKey="label"
+              tick={{ fontSize: 10, fontFamily: "Georgia, 'Times New Roman', serif", fill: "var(--text-muted)" }}
+              tickLine={false}
+              axisLine={{ stroke: "var(--border)" }}
+              interval="preserveStartEnd"
+            />
+            <YAxis
+              tick={{ fontSize: 10, fontFamily: "Georgia, 'Times New Roman', serif", fill: "var(--text-muted)" }}
+              tickLine={false}
+              axisLine={false}
+              width={40}
+            />
+            <Tooltip
+              contentStyle={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: "0.5rem",
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontSize: "0.8125rem",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
               }}
-            >
-              <span
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  top: "-0.75rem",
-                  fontFamily: "Georgia, 'Times New Roman', serif",
-                  fontSize: "0.625rem",
-                  color: "var(--text-muted)",
-                }}
-              >
-                Goal
-              </span>
-            </div>
-
-            {/* Week separator lines */}
-            {[7, 14, 21].map((idx) => (
-              <div
-                key={idx}
-                style={{
-                  position: "absolute",
-                  left: `${(idx / CHART_DAYS) * 100}%`,
-                  top: 0,
-                  bottom: 0,
-                  width: "1px",
-                  background: "var(--border)",
-                  zIndex: 0,
-                }}
-              />
-            ))}
-
-            {chartData.map((day) => {
-              const heightPercent = maxXP > 0 ? (day.xp / maxXP) * 100 : 0;
-              const meetsGoal = day.xp >= xpState.dailyGoal;
-
-              return (
-                <div
-                  key={day.date}
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "flex-end",
-                    height: "100%",
-                    position: "relative",
-                    zIndex: 2,
-                  }}
-                  title={`${day.date}: ${day.xp} XP`}
-                >
-                  <div
-                    style={{
-                      width: "100%",
-                      maxWidth: "1.25rem",
-                      height: `${Math.max(heightPercent, day.xp > 0 ? 2 : 0)}%`,
-                      background: meetsGoal
-                        ? "var(--success)"
-                        : day.xp > 0
-                          ? "var(--accent)"
-                          : "var(--border)",
-                      borderRadius: "2px 2px 0 0",
-                      transition: "height 0.3s ease",
-                      opacity: day.isToday ? 1 : 0.8,
-                      boxShadow: day.isToday ? "0 0 0 2px var(--accent)" : "none",
-                    }}
-                  />
-                </div>
-              );
-            })}
-          </div>
-
-          {/* X-axis labels - show week markers */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginTop: "0.375rem",
-              paddingLeft: "0",
-            }}
-          >
-            {[0, 7, 14, 21, 27].map((idx) => (
-              <span key={idx} style={axisLabelStyle}>
-                {idx === 27
-                  ? "Today"
-                  : `${CHART_DAYS - idx - 1}d ago`}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Legend */}
-        <div
-          style={{
-            display: "flex",
-            gap: "1rem",
-            marginTop: "0.75rem",
-            justifyContent: "center",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <div
-              style={{
-                width: "0.625rem",
-                height: "0.625rem",
-                borderRadius: "2px",
-                background: "var(--success)",
+              labelStyle={{ color: "var(--text-primary)", fontWeight: 600 }}
+              formatter={(value: unknown) => [`${value} XP`, "XP"]}
+              labelFormatter={(label: unknown) => String(label)}
+            />
+            <ReferenceLine
+              y={xpState.dailyGoal}
+              stroke="var(--text-muted)"
+              strokeDasharray="6 3"
+              strokeOpacity={0.5}
+              label={{
+                value: `Goal: ${xpState.dailyGoal}`,
+                position: "insideTopRight",
+                style: { fontSize: 10, fontFamily: "Georgia, 'Times New Roman', serif", fill: "var(--text-muted)" },
               }}
             />
-            <span style={{ ...axisLabelStyle, fontSize: "0.6875rem" }}>Met goal</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <div
-              style={{
-                width: "0.625rem",
-                height: "0.625rem",
-                borderRadius: "2px",
-                background: "var(--accent)",
-              }}
-            />
-            <span style={{ ...axisLabelStyle, fontSize: "0.6875rem" }}>Below goal</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <div
-              style={{
-                width: "0.625rem",
-                height: "0.625rem",
-                borderRadius: "2px",
-                borderTop: "2px dashed var(--text-muted)",
-              }}
-            />
-            <span style={{ ...axisLabelStyle, fontSize: "0.6875rem" }}>
-              Daily goal ({xpState.dailyGoal} XP)
-            </span>
-          </div>
+            <Bar dataKey="xp" radius={[2, 2, 0, 0]} maxBarSize={20}>
+              {chartData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={
+                    entry.xp >= xpState.dailyGoal
+                      ? "var(--success)"
+                      : entry.xp > 0
+                        ? "var(--accent)"
+                        : "var(--border)"
+                  }
+                  opacity={entry.isToday ? 1 : 0.8}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+
+        <div style={{ display: "flex", gap: "1rem", marginTop: "0.75rem", justifyContent: "center" }}>
+          <LegendItem color="var(--success)" label="Met goal" />
+          <LegendItem color="var(--accent)" label="Below goal" />
+          <LegendItem color="var(--text-muted)" label={`Daily goal (${xpState.dailyGoal} XP)`} dashed />
         </div>
       </div>
     </section>
+  );
+}
+
+function LegendItem({ color, label, dashed }: { color: string; label: string; dashed?: boolean }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+      <div
+        style={{
+          width: "0.625rem",
+          height: "0.625rem",
+          borderRadius: "2px",
+          background: dashed ? "transparent" : color,
+          borderTop: dashed ? `2px dashed ${color}` : undefined,
+        }}
+      />
+      <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "0.6875rem", color: "var(--text-muted)" }}>
+        {label}
+      </span>
+    </div>
   );
 }
 
@@ -259,10 +160,4 @@ const sectionTitleStyle: React.CSSProperties = {
   fontWeight: 600,
   color: "var(--text-primary)",
   margin: 0,
-};
-
-const axisLabelStyle: React.CSSProperties = {
-  fontFamily: "Georgia, 'Times New Roman', serif",
-  fontSize: "0.625rem",
-  color: "var(--text-muted)",
 };

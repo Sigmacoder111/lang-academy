@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import type { GraphNode } from "../types/graph";
 import type { UserProgress } from "../types/state";
 import type { NodeMasteryState } from "../types/analytics";
-import { getNodeMasteryState, getGraphLayers, formatDate } from "../engine/analytics";
+import { getNodeMasteryState, getHSKLayers, formatDate } from "../engine/analytics";
 
 interface Props {
   graph: GraphNode[];
@@ -49,7 +49,7 @@ export default function KnowledgeMap({ graph, progress }: Props) {
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
 
-  const layers = useMemo(() => getGraphLayers(graph), [graph]);
+  const layers = useMemo(() => getHSKLayers(graph), [graph]);
 
   const nodeStates = useMemo(() => {
     const map = new Map<string, NodeMasteryState>();
