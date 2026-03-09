@@ -263,6 +263,106 @@ export function getLongestStreak(): number {
   return longest;
 }
 
+// --- Per-Theme Analytics ---
+
+export interface ThemeStats {
+  key: string;
+  total: number;
+  mastered: number;
+  inProgress: number;
+  gaps: number;
+  masteryPercent: number;
+}
+
+export function getThemeStats(
+  graph: GraphNode[],
+  progress: UserProgress
+): ThemeStats[] {
+  const themeMap = new Map<string, { total: number; mastered: number; inProgress: number; gaps: number }>();
+
+  for (const node of graph) {
+    if (!node.themes) continue;
+    for (const theme of node.themes) {
+      if (!themeMap.has(theme)) {
+        themeMap.set(theme, { total: 0, mastered: 0, inProgress: 0, gaps: 0 });
+      }
+      const entry = themeMap.get(theme)!;
+      entry.total++;
+      const state = progress[node.id];
+      if (state) {
+        if (state.mastery >= 0.8) {
+          entry.mastered++;
+        } else if (state.mastery > 0) {
+          entry.inProgress++;
+        } else {
+          entry.gaps++;
+        }
+      } else {
+        entry.gaps++;
+      }
+    }
+  }
+
+  const results: ThemeStats[] = [];
+  for (const [key, data] of themeMap.entries()) {
+    results.push({
+      key,
+      ...data,
+      masteryPercent: data.total > 0 ? Math.round((data.mastered / data.total) * 100) : 0,
+    });
+  }
+
+  results.sort((a, b) => a.masteryPercent - b.masteryPercent);
+  return results;
+}
+
+/**
+ * Estimate what % of a theme's nodes will be mastered by a target date,
+ * given the current pace.
+ */
+export function estimateThemeReadiness(
+  theme: string,
+  targetDate: Date,
+  graph: GraphNode[],
+  progress: UserProgress,
+  xpState: XPState
+): number {
+  const themeNodes = graph.filter((n) => n.themes?.includes(theme));
+  if (themeNodes.length === 0) return 100;
+
+  const mastered = themeNodes.filter(
+    (n) => progress[n.id] && progress[n.id].mastery >= 0.8
+  ).length;
+
+  const remaining = themeNodes.length - mastered;
+  if (remaining === 0) return 100;
+
+  const history = loadXPHistory();
+  let dailyPace: number;
+  if (history.length >= 3) {
+    const recentDays = history.slice(0, 14);
+    const totalXP = recentDays.reduce((sum, d) => sum + d.xp, 0);
+    dailyPace = totalXP / recentDays.length;
+  } else {
+    dailyPace = xpState.dailyGoal;
+  }
+  if (dailyPace <= 0) dailyPace = xpState.dailyGoal;
+
+  const now = new Date();
+  const daysLeft = Math.max(
+    1,
+    Math.ceil((targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+  );
+
+  const totalNodes = graph.length;
+  const themeShare = themeNodes.length / totalNodes;
+  const themeDailyXP = dailyPace * themeShare;
+  const topicsCanLearn = Math.floor((themeDailyXP * daysLeft) / ESTIMATED_XP_PER_TOPIC);
+  const projectedMastered = Math.min(themeNodes.length, mastered + topicsCanLearn);
+
+  return Math.round((projectedMastered / themeNodes.length) * 100);
+}
+
 // --- Date Formatting ---
 
 export function formatDate(date: Date): string {

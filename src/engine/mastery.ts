@@ -76,12 +76,21 @@ export interface Stats {
   mastered: number;
 }
 
-export function getStats(graph: GraphNode[], progress: UserProgress): Stats {
+export function getStats(
+  graph: GraphNode[],
+  progress: UserProgress,
+  themeFilter?: string[]
+): Stats {
+  const nodes =
+    themeFilter && themeFilter.length > 0
+      ? graph.filter((n) => n.themes?.some((t) => themeFilter.includes(t)))
+      : graph;
+
   let unlocked = 0;
   let inProgress = 0;
   let mastered = 0;
 
-  for (const node of graph) {
+  for (const node of nodes) {
     if (!isUnlocked(node.id, graph, progress)) continue;
     unlocked++;
 
@@ -96,7 +105,7 @@ export function getStats(graph: GraphNode[], progress: UserProgress): Stats {
   }
 
   return {
-    total: graph.length,
+    total: nodes.length,
     unlocked,
     inProgress,
     mastered,
