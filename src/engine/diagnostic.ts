@@ -1,4 +1,4 @@
-import type { GraphNode, PracticeProblem, ProblemBankEntry } from "../types/graph";
+import type { GraphNode, DiagnosticQuestion, DiagnosticQuestionFormat } from "../types/graph";
 import type { NodeState, UserProgress } from "../types/state";
 import { makeDefaultNodeState } from "../types/state";
 
@@ -19,6 +19,8 @@ export interface DiagnosticState {
   conditionalTopics: string[];
   foundationalGaps: string[];
   testedNodeIds: Set<string>;
+  askedQuestionIds: Set<string>;
+  pinyinQuestionCount: number;
   levelScores: Record<number, { correct: number; total: number; weightedScore: number }>;
   questionCount: number;
   startedAt: number;
@@ -45,6 +47,8 @@ export interface SerializedDiagnosticState {
   conditionalTopics: string[];
   foundationalGaps: string[];
   testedNodeIds: string[];
+  askedQuestionIds: string[];
+  pinyinQuestionCount: number;
   levelScores: Record<number, { correct: number; total: number; weightedScore: number }>;
   questionCount: number;
   startedAt: number;
@@ -54,10 +58,11 @@ export interface SerializedDiagnosticState {
 
 const HSK_LEVELS = [1, 2, 3, 4, 5, 6];
 const START_LEVEL = 3;
-const ADAPTIVE_PHASE_MIN = 12;
-const ADAPTIVE_PHASE_MAX = 20;
-const FRONTIER_PHASE_MAX = 25;
-const TOTAL_MAX = 45;
+const QUESTIONS_PER_LEVEL = 3;
+const ADAPTIVE_PHASE_MIN = 15;
+const FRONTIER_PHASE_MAX = 20;
+const TOTAL_MAX = 35;
+const MAX_PINYIN_QUESTIONS = 4;
 const FAST_THRESHOLD_RATIO = 1.2;
 const ESTIMATED_XP_PER_TOPIC = 20;
 const AP_EXAM_DATE = "2026-05-08";
@@ -70,6 +75,7 @@ export function serializeDiagnosticState(state: DiagnosticState): SerializedDiag
   return {
     ...state,
     testedNodeIds: [...state.testedNodeIds],
+    askedQuestionIds: [...state.askedQuestionIds],
   };
 }
 
@@ -77,6 +83,8 @@ export function deserializeDiagnosticState(raw: SerializedDiagnosticState): Diag
   return {
     ...raw,
     testedNodeIds: new Set(raw.testedNodeIds),
+    askedQuestionIds: new Set(raw.askedQuestionIds ?? []),
+    pinyinQuestionCount: raw.pinyinQuestionCount ?? 0,
   };
 }
 
@@ -114,15 +122,6 @@ function getNodesByLevel(graph: GraphNode[]): Record<number, GraphNode[]> {
   return byLevel;
 }
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
 function isFast(solveTimeSeconds: number, expectedSeconds: number): boolean {
   return solveTimeSeconds <= expectedSeconds * FAST_THRESHOLD_RATIO;
 }
@@ -131,25 +130,6 @@ function responseWeight(correct: boolean, fast: boolean): number {
   if (correct && fast) return 1.0;
   if (correct && !fast) return 0.6;
   return 0.0;
-}
-
-function findProblemForNode(
-  nodeId: string,
-  graph: GraphNode[],
-  problemBank: ProblemBankEntry[]
-): PracticeProblem | null {
-  const bankEntry = problemBank.find((e) => e.nodeId === nodeId);
-  if (bankEntry && bankEntry.problems.length > 0) {
-    return bankEntry.problems[Math.floor(Math.random() * bankEntry.problems.length)];
-  }
-
-  const node = graph.find((n) => n.id === nodeId);
-  if (node && node.lesson.practiceProblems.length > 0) {
-    const problems = node.lesson.practiceProblems;
-    return problems[Math.floor(Math.random() * problems.length)];
-  }
-
-  return null;
 }
 
 function countDependents(nodeId: string, graph: GraphNode[]): number {
@@ -167,6 +147,8 @@ export function startDiagnostic(): DiagnosticState {
     conditionalTopics: [],
     foundationalGaps: [],
     testedNodeIds: new Set(),
+    askedQuestionIds: new Set(),
+    pinyinQuestionCount: 0,
     levelScores: {},
     questionCount: 0,
     startedAt: Date.now(),
@@ -175,82 +157,149 @@ export function startDiagnostic(): DiagnosticState {
 
 export function getDiagnosticProblem(
   state: DiagnosticState,
-  graph: GraphNode[],
-  problemBank: ProblemBankEntry[]
-): { problem: PracticeProblem; nodeId: string } | null {
+  diagnosticBank: DiagnosticQuestion[]
+): { question: DiagnosticQuestion } | null {
   if (state.phase === "complete") return null;
   if (state.questionCount >= TOTAL_MAX) return null;
 
-  const byLevel = getNodesByLevel(graph);
+  // Intersperse pinyin questions: every ~8 questions, try to insert one
+  const pinyinInterval = Math.floor(TOTAL_MAX / (MAX_PINYIN_QUESTIONS + 1));
+  if (
+    state.pinyinQuestionCount < MAX_PINYIN_QUESTIONS &&
+    state.questionCount > 0 &&
+    state.questionCount % pinyinInterval === 0
+  ) {
+    const pinyinQ = getPinyinQuestion(state, diagnosticBank);
+    if (pinyinQ) return pinyinQ;
+  }
 
   if (state.phase === "adaptive_search") {
-    return getAdaptiveProblem(state, byLevel, graph, problemBank);
+    return getAdaptiveQuestion(state, diagnosticBank);
   }
 
-  return getFrontierProblem(state, byLevel, graph, problemBank);
+  return getFrontierQuestion(state, diagnosticBank);
 }
 
-function getAdaptiveProblem(
+function getPinyinQuestion(
   state: DiagnosticState,
-  byLevel: Record<number, GraphNode[]>,
-  graph: GraphNode[],
-  problemBank: ProblemBankEntry[]
-): { problem: PracticeProblem; nodeId: string } | null {
+  bank: DiagnosticQuestion[]
+): { question: DiagnosticQuestion } | null {
   const level = state.currentLevel;
-  const candidates = byLevel[level]?.filter((n) => !state.testedNodeIds.has(n.id)) ?? [];
+  const searchLevels = [level, level - 1, level + 1, level - 2, level + 2]
+    .filter((l) => l >= 1 && l <= 6);
 
-  if (candidates.length === 0) {
-    const adjacent = [level - 1, level + 1].filter((l) => l >= 1 && l <= 6);
-    for (const adj of adjacent) {
-      const adjCandidates = byLevel[adj]?.filter((n) => !state.testedNodeIds.has(n.id)) ?? [];
-      if (adjCandidates.length > 0) {
-        const node = shuffle(adjCandidates)[0];
-        const problem = findProblemForNode(node.id, graph, problemBank);
-        if (problem) return { problem, nodeId: node.id };
-      }
+  for (const l of searchLevels) {
+    const candidates = bank.filter(
+      (q) =>
+        q.hskLevel === l &&
+        q.format === "pinyin_to_character" &&
+        !state.askedQuestionIds.has(q.id)
+    );
+    if (candidates.length > 0) {
+      return { question: pickRandom(candidates) };
     }
-    return null;
   }
-
-  const node = shuffle(candidates)[0];
-  const problem = findProblemForNode(node.id, graph, problemBank);
-  if (!problem) {
-    for (const candidate of shuffle(candidates).slice(0, 5)) {
-      const p = findProblemForNode(candidate.id, graph, problemBank);
-      if (p) return { problem: p, nodeId: candidate.id };
-    }
-    return null;
-  }
-
-  return { problem, nodeId: node.id };
+  return null;
 }
 
-function getFrontierProblem(
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function getAdaptiveQuestion(
   state: DiagnosticState,
-  byLevel: Record<number, GraphNode[]>,
-  graph: GraphNode[],
-  problemBank: ProblemBankEntry[]
-): { problem: PracticeProblem; nodeId: string } | null {
+  bank: DiagnosticQuestion[]
+): { question: DiagnosticQuestion } | null {
+  const level = state.currentLevel;
+
+  const allowedFormats: DiagnosticQuestionFormat[] = [
+    "character_to_meaning",
+    "sentence_context",
+  ];
+
+  const candidates = bank.filter(
+    (q) =>
+      q.hskLevel === level &&
+      allowedFormats.includes(q.format) &&
+      !state.askedQuestionIds.has(q.id)
+  );
+
+  if (candidates.length > 0) {
+    return { question: pickRandom(candidates) };
+  }
+
+  const adjacent = [level - 1, level + 1].filter((l) => l >= 1 && l <= 6);
+  for (const adj of adjacent) {
+    const adjCandidates = bank.filter(
+      (q) =>
+        q.hskLevel === adj &&
+        allowedFormats.includes(q.format) &&
+        !state.askedQuestionIds.has(q.id)
+    );
+    if (adjCandidates.length > 0) {
+      return { question: pickRandom(adjCandidates) };
+    }
+  }
+
+  const anyAtLevel = bank.filter(
+    (q) => q.hskLevel === level && !state.askedQuestionIds.has(q.id)
+  );
+  if (anyAtLevel.length > 0) return { question: pickRandom(anyAtLevel) };
+
+  return null;
+}
+
+function getFrontierQuestion(
+  state: DiagnosticState,
+  bank: DiagnosticQuestion[]
+): { question: DiagnosticQuestion } | null {
   const boundary = state.boundaryLevel ?? START_LEVEL;
 
+  const allowedFormats: DiagnosticQuestionFormat[] = [
+    "meaning_to_character",
+    "sentence_context",
+  ];
+
+  if (boundary >= 4) {
+    allowedFormats.push("reading_comprehension");
+  }
+
+  if (state.pinyinQuestionCount < MAX_PINYIN_QUESTIONS) {
+    allowedFormats.push("pinyin_to_character");
+  }
+
   const targetLevels = [boundary, Math.max(1, boundary - 1)];
+
   for (const level of targetLevels) {
-    const candidates = byLevel[level]?.filter((n) => !state.testedNodeIds.has(n.id)) ?? [];
+    const candidates = bank.filter(
+      (q) =>
+        q.hskLevel === level &&
+        allowedFormats.includes(q.format) &&
+        !state.askedQuestionIds.has(q.id)
+    );
     if (candidates.length > 0) {
-      for (const candidate of shuffle(candidates).slice(0, 5)) {
-        const problem = findProblemForNode(candidate.id, graph, problemBank);
-        if (problem) return { problem, nodeId: candidate.id };
-      }
+      return { question: pickRandom(candidates) };
     }
   }
 
   const aboveLevel = Math.min(6, boundary + 1);
-  const aboveCandidates = byLevel[aboveLevel]?.filter((n) => !state.testedNodeIds.has(n.id)) ?? [];
+  const aboveCandidates = bank.filter(
+    (q) =>
+      q.hskLevel === aboveLevel &&
+      allowedFormats.includes(q.format) &&
+      !state.askedQuestionIds.has(q.id)
+  );
   if (aboveCandidates.length > 0) {
-    for (const candidate of shuffle(aboveCandidates).slice(0, 3)) {
-      const problem = findProblemForNode(candidate.id, graph, problemBank);
-      if (problem) return { problem, nodeId: candidate.id };
-    }
+    return { question: pickRandom(aboveCandidates) };
+  }
+
+  const anyNearBoundary = bank.filter(
+    (q) =>
+      Math.abs(q.hskLevel - boundary) <= 1 &&
+      !state.askedQuestionIds.has(q.id)
+  );
+  if (anyNearBoundary.length > 0) {
+    return { question: pickRandom(anyNearBoundary) };
   }
 
   return null;
@@ -258,20 +307,34 @@ function getFrontierProblem(
 
 export function recordDiagnosticResponse(
   state: DiagnosticState,
-  nodeId: string,
+  question: DiagnosticQuestion,
   correct: boolean,
   solveTimeSeconds: number,
-  expectedSeconds: number,
-  graph: GraphNode[]
 ): DiagnosticState {
-  const node = graph.find((n) => n.id === nodeId);
-  const nodeLevel = node?.hskLevel ?? 1;
-  const fast = isFast(solveTimeSeconds, expectedSeconds);
+  const nodeLevel = question.hskLevel;
+  const fast = isFast(solveTimeSeconds, question.expectedSeconds);
   const weight = responseWeight(correct, fast);
 
-  const newResponses = [...state.responses, { nodeId, correct, solveTimeSeconds, expectedSeconds }];
+  const newResponses = [
+    ...state.responses,
+    {
+      nodeId: question.targetNodeId,
+      correct,
+      solveTimeSeconds,
+      expectedSeconds: question.expectedSeconds,
+    },
+  ];
+
   const newTested = new Set(state.testedNodeIds);
-  newTested.add(nodeId);
+  if (question.targetNodeId && !question.targetNodeId.startsWith("_rc_")) {
+    newTested.add(question.targetNodeId);
+  }
+
+  const newAsked = new Set(state.askedQuestionIds);
+  newAsked.add(question.id);
+
+  let newPinyinCount = state.pinyinQuestionCount;
+  if (question.format === "pinyin_to_character") newPinyinCount++;
 
   const newLevelScores = { ...state.levelScores };
   if (!newLevelScores[nodeLevel]) {
@@ -292,33 +355,30 @@ export function recordDiagnosticResponse(
   let newFoundationalGaps = [...state.foundationalGaps];
 
   if (state.phase === "adaptive_search") {
-    if (correct) {
-      if (newCurrentLevel < 6) {
-        newCurrentLevel = Math.min(6, newCurrentLevel + 1);
-      }
-    } else {
-      if (newCurrentLevel > 1) {
-        newCurrentLevel = Math.max(1, newCurrentLevel - 1);
+    const currentLevelScore = newLevelScores[state.currentLevel];
+    const questionsAtLevel = currentLevelScore?.total ?? 0;
+
+    if (questionsAtLevel >= QUESTIONS_PER_LEVEL) {
+      const accuracy = currentLevelScore.weightedScore / currentLevelScore.total;
+      if (accuracy >= 0.5 && state.currentLevel < 6) {
+        newCurrentLevel = state.currentLevel + 1;
+      } else if (accuracy < 0.5 && state.currentLevel > 1) {
+        newCurrentLevel = state.currentLevel - 1;
       }
     }
 
-    const shouldTransition = newQuestionCount >= ADAPTIVE_PHASE_MIN;
-    if (shouldTransition) {
-      newBoundaryLevel = computeBoundaryLevel(newLevelScores);
-      newPhase = "frontier_refinement";
-      newCurrentLevel = newBoundaryLevel;
-    } else if (newQuestionCount >= ADAPTIVE_PHASE_MAX) {
+    if (newQuestionCount >= ADAPTIVE_PHASE_MIN) {
       newBoundaryLevel = computeBoundaryLevel(newLevelScores);
       newPhase = "frontier_refinement";
       newCurrentLevel = newBoundaryLevel;
     }
   } else if (state.phase === "frontier_refinement") {
     if (correct && !fast && nodeLevel === (state.boundaryLevel ?? START_LEVEL)) {
-      newConditionalTopics = [...newConditionalTopics, nodeId];
+      newConditionalTopics = [...newConditionalTopics, question.targetNodeId];
     }
 
     if (!correct && nodeLevel < (state.boundaryLevel ?? START_LEVEL)) {
-      newFoundationalGaps = [...newFoundationalGaps, nodeId];
+      newFoundationalGaps = [...newFoundationalGaps, question.targetNodeId];
     }
 
     const frontierQuestions = newQuestionCount - ADAPTIVE_PHASE_MIN;
@@ -335,6 +395,8 @@ export function recordDiagnosticResponse(
     conditionalTopics: newConditionalTopics,
     foundationalGaps: newFoundationalGaps,
     testedNodeIds: newTested,
+    askedQuestionIds: newAsked,
+    pinyinQuestionCount: newPinyinCount,
     levelScores: newLevelScores,
     questionCount: newQuestionCount,
     startedAt: state.startedAt,
@@ -375,6 +437,7 @@ export function commitDiagnosticResults(
   const testedResponses = new Map<string, { correct: boolean; fast: boolean }>();
 
   for (const resp of state.responses) {
+    if (resp.nodeId.startsWith("_rc_")) continue;
     const fast = isFast(resp.solveTimeSeconds, resp.expectedSeconds);
     testedResponses.set(resp.nodeId, { correct: resp.correct, fast });
   }
@@ -431,16 +494,13 @@ export function commitDiagnosticResults(
             nodesToStudy++;
           }
         } else {
-          // Untested at boundary — mark conditional
           progress[node.id] = makeNodeState(0.7, 3 * 24 * 3600, now);
           masteryByLevel[level].conditional++;
         }
       }
-      // Above boundary: untouched
     }
   }
 
-  // Also handle nodes without hskLevel (radicals etc.) — auto-master if all dependents are below boundary
   for (const node of graph) {
     if (node.hskLevel) continue;
     if (progress[node.id]) continue;
@@ -448,20 +508,21 @@ export function commitDiagnosticResults(
     nodesAutoMastered++;
   }
 
-  // Count above-boundary as "to study"
   for (const level of HSK_LEVELS) {
     if (level > boundary) {
       nodesToStudy += (nodesByLevel[level] ?? []).length;
     }
   }
 
-  const foundationalGaps = state.foundationalGaps.map((nodeId) => ({
-    nodeId,
-    blocksCount: countDependents(nodeId, graph),
-  }));
+  const foundationalGaps = state.foundationalGaps
+    .filter((id) => !id.startsWith("_rc_"))
+    .map((nodeId) => ({
+      nodeId,
+      blocksCount: countDependents(nodeId, graph),
+    }));
   foundationalGaps.sort((a, b) => b.blocksCount - a.blocksCount);
 
-  const totalRemaining = nodesToStudy + masteryByLevel[boundary]?.conditional;
+  const totalRemaining = nodesToStudy + (masteryByLevel[boundary]?.conditional ?? 0);
   const remainingXP = totalRemaining * ESTIMATED_XP_PER_TOPIC;
   const targetDate = new Date(AP_EXAM_DATE);
 
