@@ -1,4 +1,4 @@
-import type { GraphNode } from "../types/graph";
+import type { GraphNode, NodeType } from "../types/graph";
 import type { UserProgress } from "../types/state";
 import type { Task, XPState } from "../types/tasks";
 import { isUnlocked } from "./mastery";
@@ -7,19 +7,49 @@ import { needsReview, overdueScore } from "./hierarchical-srs";
 const QUIZ_GATE_XP = 150;
 const MAX_TASKS = 5;
 
+export interface CategoryWeights {
+  vocabulary: number;
+  grammar: number;
+  reading: number;
+  writing: number;
+}
+
+export const DEFAULT_CATEGORY_WEIGHTS: CategoryWeights = {
+  vocabulary: 0.50,
+  grammar: 0.25,
+  reading: 0.15,
+  writing: 0.10,
+};
+
+function getNodeCategory(type: NodeType): keyof CategoryWeights {
+  if (type === "radical" || type === "character" || type === "word") return "vocabulary";
+  if (type === "grammar") return "grammar";
+  if (type === "reading") return "reading";
+  return "writing";
+}
+
+function weightedShuffle(
+  nodes: GraphNode[],
+  weights: CategoryWeights
+): GraphNode[] {
+  const scored = nodes.map((node) => {
+    const cat = getNodeCategory(node.type);
+    const weight = weights[cat];
+    return { node, score: Math.random() * weight };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored.map((s) => s.node);
+}
+
 /**
  * Select up to 5 optimal tasks for the student to choose from.
- * Priority order:
- *   1. Quiz gate (every ~150 XP) — required
- *   2. Overdue reviews (accounting for hierarchical SRS credit)
- *   3. Gap remediation (foundational weak nodes that block progress)
- *   4. New lessons (unlocked but not started)
- *   5. Multistep tasks (for mastered students)
+ * Uses category weights to balance vocabulary, grammar, reading, and writing.
  */
 export function selectTasks(
   graph: GraphNode[],
   progress: UserProgress,
-  xpState: XPState
+  xpState: XPState,
+  categoryWeights: CategoryWeights = DEFAULT_CATEGORY_WEIGHTS
 ): Task[] {
   const tasks: Task[] = [];
   const usedTopicIds = new Set<string>();
@@ -65,6 +95,8 @@ export function selectTasks(
   }
 
   overdueReviews.sort((a, b) => b.score - a.score);
+
+  const weightedNewUnlocked = weightedShuffle(newUnlocked, categoryWeights);
 
   function addTask(task: Task): boolean {
     if (tasks.length >= MAX_TASKS) return false;
@@ -124,8 +156,8 @@ export function selectTasks(
     });
   }
 
-  // 5. New lessons
-  for (const node of newUnlocked) {
+  // 5. New lessons — weighted by category
+  for (const node of weightedNewUnlocked) {
     if (tasks.length >= MAX_TASKS - 1) break;
     addTask({
       id: `lesson-${node.id}`,
@@ -149,32 +181,29 @@ export function selectTasks(
     });
   }
 
-  // Fill remaining slots
+  // Fill remaining slots using category weights
   while (tasks.length < MAX_TASKS) {
     let added = false;
 
-    const lessonCount = tasks.filter((t) => t.type === "lesson").length;
-    if (lessonCount < newUnlocked.length) {
-      const node = newUnlocked.find((n) => !usedTopicIds.has(n.id));
-      if (node) {
-        added = addTask({
-          id: `lesson-${node.id}`,
-          type: "lesson",
-          topic: node,
-          xpReward: 10,
-          estimatedMinutes: 8,
-        });
-        if (added) continue;
-      }
+    const node = weightedNewUnlocked.find((n) => !usedTopicIds.has(n.id));
+    if (node) {
+      added = addTask({
+        id: `lesson-${node.id}`,
+        type: "lesson",
+        topic: node,
+        xpReward: 10,
+        estimatedMinutes: 8,
+      });
+      if (added) continue;
     }
 
     const reviewIdx = overdueReviews.findIndex((r) => !usedTopicIds.has(r.node.id));
     if (reviewIdx >= 0) {
-      const { node } = overdueReviews[reviewIdx];
+      const { node: rNode } = overdueReviews[reviewIdx];
       added = addTask({
-        id: `review-${node.id}`,
+        id: `review-${rNode.id}`,
         type: "review",
-        topic: node,
+        topic: rNode,
         xpReward: 5,
         estimatedMinutes: 3,
       });

@@ -55,6 +55,16 @@ function generateReviewProblems(
   allNodes: NodeWithLesson[],
   count: number
 ): PracticeProblem[] {
+  if (node.type === "grammar") {
+    return generateGrammarReviewProblems(node, allNodes, count);
+  }
+  if (node.type === "reading") {
+    return generateReadingReviewProblems(node, allNodes, count);
+  }
+  if (node.type === "writing") {
+    return generateWritingReviewProblems(node, allNodes, count);
+  }
+
   const rng = seededRandom(`review-bank-v4-${node.id}`);
   const problems: PracticeProblem[] = [];
 
@@ -67,7 +77,6 @@ function generateReviewProblems(
   const distractorPool = sameLevelPool.length >= 3 ? sameLevelPool : fallbackPool;
 
   const questionGenerators = [
-    // Character → Meaning: "What does X mean?"
     () => {
       const wrong = shuffle(distractorPool, rng).slice(0, 3).map(n => n.meaning);
       const opts = shuffle([node.meaning, ...wrong], rng);
@@ -79,7 +88,6 @@ function generateReviewProblems(
         expectedSeconds: 10,
       };
     },
-    // Meaning → Character: "Which word means X?"
     () => {
       const wrong = shuffle(distractorPool, rng).slice(0, 3).map(n => n.hanzi);
       const opts = shuffle([node.hanzi, ...wrong], rng);
@@ -91,7 +99,6 @@ function generateReviewProblems(
         expectedSeconds: 12,
       };
     },
-    // Pronunciation: "How do you pronounce X?"
     () => {
       const wrong = shuffle(distractorPool, rng).slice(0, 3).map(n => n.pinyin);
       const opts = shuffle([node.pinyin, ...wrong], rng);
@@ -103,7 +110,6 @@ function generateReviewProblems(
         expectedSeconds: 12,
       };
     },
-    // Pinyin → Meaning: "What does this pronunciation mean?"
     () => {
       const wrong = shuffle(distractorPool, rng).slice(0, 3).map(n => n.meaning);
       const opts = shuffle([node.meaning, ...wrong], rng);
@@ -136,6 +142,170 @@ function generateReviewProblems(
     }
   }
 
+  return problems;
+}
+
+function generateGrammarReviewProblems(
+  node: NodeWithLesson,
+  allNodes: NodeWithLesson[],
+  count: number
+): PracticeProblem[] {
+  const rng = seededRandom(`grammar-review-${node.id}`);
+  const problems: PracticeProblem[] = [];
+  const grammarPool = allNodes.filter(n => n.id !== node.id && n.type === "grammar");
+  const pool = grammarPool.length >= 3 ? grammarPool : allNodes.filter(n => n.id !== node.id);
+
+  const generators = [
+    () => {
+      const wrong = shuffle(pool, rng).slice(0, 3).map(n => n.meaning);
+      const opts = shuffle([node.meaning, ...wrong], rng);
+      return {
+        question: `The pattern "${node.hanzi}" expresses ____.`,
+        options: opts,
+        correctIndex: opts.indexOf(node.meaning),
+        explanation: `${node.hanzi} (${node.pinyin}) means "${node.meaning}".`,
+        expectedSeconds: 15,
+        questionType: "cloze" as const,
+      };
+    },
+    () => {
+      const wrong = shuffle(pool, rng).slice(0, 3).map(n => n.hanzi);
+      const opts = shuffle([node.hanzi, ...wrong], rng);
+      return {
+        question: `Which pattern means "${node.meaning}"?`,
+        options: opts,
+        correctIndex: opts.indexOf(node.hanzi),
+        explanation: `"${node.meaning}" uses the pattern ${node.hanzi}.`,
+        expectedSeconds: 15,
+        questionType: "pattern_match" as const,
+      };
+    },
+    () => {
+      const wrong = shuffle(pool, rng).slice(0, 3).map(n => n.meaning);
+      const opts = shuffle([node.meaning, ...wrong], rng);
+      return {
+        question: `What function does "${node.hanzi}" (${node.pinyin}) serve?`,
+        options: opts,
+        correctIndex: opts.indexOf(node.meaning),
+        explanation: `${node.hanzi} is used for "${node.meaning}".`,
+        expectedSeconds: 15,
+      };
+    },
+  ];
+
+  for (let i = 0; i < count; i++) {
+    problems.push(generators[i % generators.length]());
+  }
+  return problems;
+}
+
+function generateReadingReviewProblems(
+  node: NodeWithLesson,
+  allNodes: NodeWithLesson[],
+  count: number
+): PracticeProblem[] {
+  const rng = seededRandom(`reading-review-${node.id}`);
+  const problems: PracticeProblem[] = [];
+  const readingPool = allNodes.filter(n => n.id !== node.id && n.type === "reading");
+  const pool = readingPool.length >= 3 ? readingPool : allNodes.filter(n => n.id !== node.id);
+
+  const passage = "这是一篇关于日常生活的短文。每个人都有自己的生活方式。有些人喜欢运动，有些人喜欢读书。重要的是找到适合自己的方式，保持健康快乐。";
+  const passagePinyin = "Zhè shì yī piān guānyú rìcháng shēnghuó de duǎnwén. Měi gè rén dōu yǒu zìjǐ de shēnghuó fāngshì. Yǒuxiē rén xǐhuan yùndòng, yǒuxiē rén xǐhuan dúshū. Zhòngyào de shì zhǎodào shìhé zìjǐ de fāngshì, bǎochí jiànkāng kuàilè.";
+  const topicLabel = node.meaning.replace(" passage", "");
+
+  const generators = [
+    () => {
+      const wrong = shuffle(pool, rng).slice(0, 3).map(n =>
+        n.type === "reading" ? n.meaning.replace(" passage", "") : n.meaning
+      );
+      const opts = shuffle([topicLabel, ...wrong], rng);
+      return {
+        question: "What is this passage primarily about?",
+        options: opts,
+        correctIndex: opts.indexOf(topicLabel),
+        explanation: `The passage discusses ${node.hanzi} (${topicLabel}).`,
+        expectedSeconds: 30,
+        questionType: "passage_comprehension" as const,
+        passage,
+        passagePinyin,
+      };
+    },
+    () => {
+      const opts = shuffle([
+        "Informative and educational",
+        "Angry and confrontational",
+        "Deeply poetic and metaphorical",
+        "Technical and scientific",
+      ], rng);
+      return {
+        question: "What is the tone of this passage?",
+        options: opts,
+        correctIndex: opts.indexOf("Informative and educational"),
+        explanation: "The passage uses a neutral, informative tone to present information clearly.",
+        expectedSeconds: 20,
+        questionType: "passage_comprehension" as const,
+        passage,
+        passagePinyin,
+      };
+    },
+  ];
+
+  for (let i = 0; i < count; i++) {
+    problems.push(generators[i % generators.length]());
+  }
+  return problems;
+}
+
+function generateWritingReviewProblems(
+  node: NodeWithLesson,
+  allNodes: NodeWithLesson[],
+  count: number
+): PracticeProblem[] {
+  const rng = seededRandom(`writing-review-${node.id}`);
+  const problems: PracticeProblem[] = [];
+  const writingPool = allNodes.filter(n => n.id !== node.id && n.type === "writing");
+  const pool = writingPool.length >= 3 ? writingPool : allNodes.filter(n => n.id !== node.id);
+
+  const writingType = node.meaning.replace("Writing: ", "");
+  const modelResponse = `关于${node.hanzi}，这是一个值得讨论的话题。我们应该认真思考，并用合适的方式表达自己的观点。`;
+  const rubric = ["Clear structure", "Appropriate vocabulary", "Correct grammar", "Addresses the prompt"];
+
+  const generators = [
+    () => {
+      const wrong = shuffle(pool, rng).slice(0, 3).map(n => n.meaning.replace("Writing: ", ""));
+      const opts = shuffle([writingType, ...wrong], rng);
+      return {
+        question: "What type of writing does the model response demonstrate?",
+        options: opts,
+        correctIndex: opts.indexOf(writingType),
+        explanation: `This is an example of ${writingType}.`,
+        expectedSeconds: 15,
+        modelResponse,
+        rubric,
+      };
+    },
+    () => {
+      const opts = shuffle([
+        "Clear structure with introduction and conclusion",
+        "No structure, just random sentences",
+        "Only bullet points",
+        "A single long paragraph without organization",
+      ], rng);
+      return {
+        question: `What structure should ${writingType.toLowerCase()} follow?`,
+        options: opts,
+        correctIndex: opts.indexOf("Clear structure with introduction and conclusion"),
+        explanation: `${writingType} should follow a clear structure with introduction, body, and conclusion.`,
+        expectedSeconds: 15,
+        modelResponse,
+        rubric,
+      };
+    },
+  ];
+
+  for (let i = 0; i < count; i++) {
+    problems.push(generators[i % generators.length]());
+  }
   return problems;
 }
 
