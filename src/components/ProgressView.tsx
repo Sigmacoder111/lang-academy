@@ -9,6 +9,7 @@ import XPChart from "./XPChart";
 import TopicMastery from "./TopicMastery";
 import GapsPanel from "./GapsPanel";
 import ActivityLog from "./ActivityLog";
+import ThemeMasteryBreakdown from "./ThemeMasteryBreakdown";
 
 interface Props {
   graph: GraphNode[];
@@ -78,6 +79,11 @@ export default function ProgressView({ graph, progress, xpState }: Props) {
         {activeSubTab === "overview" && (
           <>
             <CourseOverview
+              graph={graph}
+              progress={progress}
+              xpState={xpState}
+            />
+            <ThemeMasteryBreakdown
               graph={graph}
               progress={progress}
               xpState={xpState}

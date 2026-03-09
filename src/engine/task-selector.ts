@@ -1,6 +1,7 @@
 import type { GraphNode, NodeType } from "../types/graph";
 import type { UserProgress } from "../types/state";
 import type { Task, XPState } from "../types/tasks";
+import type { ThemeWeights } from "../data/themes";
 import { isUnlocked } from "./mastery";
 import { needsReview, overdueScore } from "./hierarchical-srs";
 
@@ -28,14 +29,26 @@ function getNodeCategory(type: NodeType): keyof CategoryWeights {
   return "writing";
 }
 
+function getThemeWeight(node: GraphNode, themeWeights?: ThemeWeights): number {
+  if (!themeWeights || !node.themes || node.themes.length === 0) return 1;
+  let maxWeight = 0;
+  for (const theme of node.themes) {
+    const w = themeWeights[theme] ?? 1;
+    if (w > maxWeight) maxWeight = w;
+  }
+  return maxWeight;
+}
+
 function weightedShuffle(
   nodes: GraphNode[],
-  weights: CategoryWeights
+  weights: CategoryWeights,
+  themeWeights?: ThemeWeights
 ): GraphNode[] {
   const scored = nodes.map((node) => {
     const cat = getNodeCategory(node.type);
-    const weight = weights[cat];
-    return { node, score: Math.random() * weight };
+    const catWeight = weights[cat];
+    const tw = getThemeWeight(node, themeWeights);
+    return { node, score: Math.random() * catWeight * tw };
   });
   scored.sort((a, b) => b.score - a.score);
   return scored.map((s) => s.node);
@@ -44,12 +57,14 @@ function weightedShuffle(
 /**
  * Select up to 5 optimal tasks for the student to choose from.
  * Uses category weights to balance vocabulary, grammar, reading, and writing.
+ * Optionally applies theme weights to bias toward specific AP themes.
  */
 export function selectTasks(
   graph: GraphNode[],
   progress: UserProgress,
   xpState: XPState,
-  categoryWeights: CategoryWeights = DEFAULT_CATEGORY_WEIGHTS
+  categoryWeights: CategoryWeights = DEFAULT_CATEGORY_WEIGHTS,
+  themeWeights?: ThemeWeights
 ): Task[] {
   const tasks: Task[] = [];
   const usedTopicIds = new Set<string>();
@@ -96,7 +111,7 @@ export function selectTasks(
 
   overdueReviews.sort((a, b) => b.score - a.score);
 
-  const weightedNewUnlocked = weightedShuffle(newUnlocked, categoryWeights);
+  const weightedNewUnlocked = weightedShuffle(newUnlocked, categoryWeights, themeWeights);
 
   function addTask(task: Task): boolean {
     if (tasks.length >= MAX_TASKS) return false;

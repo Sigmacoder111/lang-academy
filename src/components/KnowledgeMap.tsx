@@ -3,6 +3,8 @@ import type { GraphNode } from "../types/graph";
 import type { UserProgress } from "../types/state";
 import type { NodeMasteryState } from "../types/analytics";
 import { getNodeMasteryState, getHSKLayers, formatDate } from "../engine/analytics";
+import { getStats } from "../engine/mastery";
+import ThemeFilter from "./ThemeFilter";
 
 interface Props {
   graph: GraphNode[];
@@ -48,6 +50,7 @@ function getStateLabel(state: NodeMasteryState): string {
 export default function KnowledgeMap({ graph, progress }: Props) {
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [themeFilter, setThemeFilter] = useState<string[]>([]);
 
   const layers = useMemo(() => getHSKLayers(graph), [graph]);
 
@@ -58,6 +61,22 @@ export default function KnowledgeMap({ graph, progress }: Props) {
     }
     return map;
   }, [graph, progress]);
+
+  const matchingNodeIds = useMemo(() => {
+    if (themeFilter.length === 0) return null;
+    const ids = new Set<string>();
+    for (const node of graph) {
+      if (node.themes?.some((t) => themeFilter.includes(t))) {
+        ids.add(node.id);
+      }
+    }
+    return ids;
+  }, [graph, themeFilter]);
+
+  const filteredStats = useMemo(
+    () => getStats(graph, progress, themeFilter.length > 0 ? themeFilter : undefined),
+    [graph, progress, themeFilter]
+  );
 
   const handleMouseEnter = useCallback(
     (node: GraphNode, e: React.MouseEvent) => {
@@ -117,6 +136,28 @@ export default function KnowledgeMap({ graph, progress }: Props) {
           </div>
         </div>
 
+        {/* Theme filter chips */}
+        <div style={{ marginBottom: "1rem" }}>
+          <ThemeFilter selected={themeFilter} onChange={setThemeFilter} />
+        </div>
+
+        {/* Filtered stats */}
+        {themeFilter.length > 0 && (
+          <div
+            style={{
+              fontFamily: "Georgia, 'Times New Roman', serif",
+              fontSize: "0.75rem",
+              color: "var(--text-muted)",
+              marginBottom: "1rem",
+              padding: "0.5rem 0.75rem",
+              background: "var(--bg-primary)",
+              borderRadius: "0.5rem",
+            }}
+          >
+            Filtered: {filteredStats.total} nodes · {filteredStats.mastered} mastered · {filteredStats.inProgress} in progress
+          </div>
+        )}
+
         {layers.map((layer) => (
           <div key={layer.id} style={{ marginBottom: "1rem" }}>
             <div
@@ -152,6 +193,8 @@ export default function KnowledgeMap({ graph, progress }: Props) {
                   const state = nodeStates.get(node.id) || "locked";
                   const mastery = progress[node.id]?.mastery ?? 0;
                   const isSelected = selectedNode === node.id;
+                  const isDimmed =
+                    matchingNodeIds !== null && !matchingNodeIds.has(node.id);
 
                   return (
                     <div
@@ -168,12 +211,14 @@ export default function KnowledgeMap({ graph, progress }: Props) {
                         alignItems: "center",
                         justifyContent: "center",
                         cursor: state !== "locked" ? "pointer" : "default",
-                        transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                        transition:
+                          "transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease",
                         transform: isSelected ? "scale(1.15)" : "scale(1)",
                         boxShadow: isSelected
                           ? "0 0 0 2px var(--accent)"
                           : "none",
                         position: "relative",
+                        opacity: isDimmed ? 0.15 : 1,
                       }}
                     >
                       <span
