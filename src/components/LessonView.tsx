@@ -93,6 +93,11 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
     .map((id) => GRAPH.find((n) => n.id === id))
     .filter(Boolean) as GraphNode[];
 
+  const hasTutorialContent =
+    topic.lesson.tutorial &&
+    topic.lesson.tutorial.length > 20 &&
+    !topic.lesson.tutorial.includes("component of");
+
   if (phase === "tutorial") {
     return (
       <div style={containerStyle}>
@@ -102,6 +107,20 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
           <div style={hanziDisplayStyle}>{topic.hanzi}</div>
           <div style={pinyinStyle}>{topic.pinyin}</div>
           <div style={meaningStyle}>{topic.meaning}</div>
+
+          {/* Quality tutorial content from the graph, if available and valid */}
+          {hasTutorialContent && (
+            <div style={{
+              ...tutorialTextStyle,
+              padding: "1rem",
+              background: "rgba(0,0,0,0.02)",
+              borderRadius: "0.75rem",
+              borderLeft: "3px solid var(--accent)",
+              marginBottom: "1rem",
+            }}>
+              <p style={{ margin: 0 }}>{topic.lesson.tutorial}</p>
+            </div>
+          )}
 
           <div style={tutorialTextStyle}>
             {topic.type === "radical" && (
@@ -126,6 +145,7 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
                         <strong style={{ fontFamily: "'Noto Serif SC', serif" }}>{n.hanzi}</strong> ({n.meaning})
                       </span>
                     ))}
+                    . Think of how these components combine to create the meaning.
                   </p>
                 )}
               </>
@@ -145,6 +165,7 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
                         <strong style={{ fontFamily: "'Noto Serif SC', serif" }}>{n.hanzi}</strong> ({n.meaning})
                       </span>
                     ))}
+                    . Understanding each character helps remember the word.
                   </p>
                 )}
               </>
@@ -197,6 +218,37 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
               </>
             )}
           </div>
+
+          {/* Context from worked example as preview */}
+          {topic.lesson.workedExample.problem && (topic.type === "radical" || topic.type === "character" || topic.type === "word") && (
+            <div style={{
+              marginTop: "0.75rem",
+              padding: "0.75rem 1rem",
+              background: "rgba(74, 140, 111, 0.06)",
+              borderRadius: "0.5rem",
+              borderLeft: "3px solid var(--success)",
+            }}>
+              <div style={{
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontSize: "12px",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                color: "var(--text-muted)",
+                marginBottom: "0.375rem",
+              }}>
+                Context
+              </div>
+              <div style={{
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontSize: "14px",
+                color: "var(--text-primary)",
+                lineHeight: 1.5,
+              }}>
+                {topic.lesson.workedExample.problem}
+              </div>
+            </div>
+          )}
 
           <button onClick={() => setPhase("worked-example")} style={primaryButtonStyle}>
             Continue
