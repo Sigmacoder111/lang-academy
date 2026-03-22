@@ -44,6 +44,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<"dashboard" | "progress">("dashboard");
   const [taskStartTime, setTaskStartTime] = useState<number>(0);
   const [diagnosticReport, setDiagnosticReport] = useState<DiagnosticReportType | null>(null);
+  const [dashboardKey, setDashboardKey] = useState(0);
 
   useEffect(() => {
     document.documentElement.setAttribute(
@@ -135,6 +136,7 @@ function App() {
 
     setActiveTask(null);
     setView("dashboard");
+    setDashboardKey((k) => k + 1);
   }, [activeTask, progress, xpState, taskStartTime]);
 
   const handleBack = useCallback(() => {
@@ -163,6 +165,7 @@ function App() {
       saveXPState(newXPState);
       setDiagnosticReport(null);
       setView("dashboard");
+      setDashboardKey((k) => k + 1);
     },
     [xpState]
   );
@@ -245,6 +248,7 @@ function App() {
       <main style={{ flex: 1, paddingBottom: "5rem", paddingTop: "1rem" }}>
         {view === "dashboard" && activeTab === "dashboard" && (
           <Dashboard
+            key={dashboardKey}
             graph={GRAPH}
             progress={progress}
             xpState={xpState}
