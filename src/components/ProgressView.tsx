@@ -19,9 +19,9 @@ interface Props {
 
 const subTabs: { id: ProgressSubTab; label: string }[] = [
   { id: "overview", label: "Overview" },
-  { id: "map", label: "Knowledge Map" },
+  { id: "activity", label: "Recent Activity" },
   { id: "topics", label: "Topics" },
-  { id: "activity", label: "Activity" },
+  { id: "map", label: "Knowledge Map" },
 ];
 
 export default function ProgressView({ graph, progress, xpState }: Props) {

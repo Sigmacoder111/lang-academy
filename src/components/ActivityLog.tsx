@@ -7,6 +7,7 @@ import { getTaskTypeInfo } from "../engine/tasks";
 export default function ActivityLog() {
   const [filter, setFilter] = useState<TaskFilter>("all");
   const activityLog = useMemo(() => loadActivityLog(), []);
+  const today = new Date().toISOString().slice(0, 10);
 
   const filtered = useMemo(() => {
     if (filter === "all") return activityLog;
@@ -63,7 +64,7 @@ export default function ActivityLog() {
             gap: "0.5rem",
           }}
         >
-          <h3 style={sectionTitleStyle}>Activity Log</h3>
+          <h3 style={sectionTitleStyle}>Recent Activity</h3>
           <div style={{ display: "flex", gap: "0.375rem", flexWrap: "wrap" }}>
             {filterOptions.map((opt) => (
               <button
@@ -95,6 +96,42 @@ export default function ActivityLog() {
             ))}
           </div>
         </div>
+
+        {/* Current session summary */}
+        {(() => {
+          const todayEntries = activityLog.filter((e) => e.date === today);
+          if (todayEntries.length === 0) return null;
+          const totalXP = todayEntries.reduce((sum, e) => sum + e.xpEarned, 0);
+          const totalTime = todayEntries.reduce((sum, e) => sum + e.timeSpentSeconds, 0);
+          const totalCorrect = todayEntries.reduce((sum, e) => sum + e.correctCount, 0);
+          const totalQuestions = todayEntries.reduce((sum, e) => sum + e.questionsAnswered, 0);
+          return (
+            <div style={{
+              padding: "0.75rem 1rem",
+              marginBottom: "1rem",
+              background: "rgba(193, 95, 60, 0.06)",
+              borderRadius: "0.5rem",
+              borderLeft: "3px solid var(--accent)",
+            }}>
+              <div style={{
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                color: "var(--text-primary)",
+                marginBottom: "0.25rem",
+              }}>
+                Today's Session
+              </div>
+              <div style={{
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontSize: "0.75rem",
+                color: "var(--text-muted)",
+              }}>
+                {todayEntries.length} task{todayEntries.length !== 1 ? "s" : ""} · {totalXP} XP · {totalCorrect}/{totalQuestions} correct · {formatTime(totalTime)}
+              </div>
+            </div>
+          );
+        })()}
 
         {grouped.length === 0 && (
           <div
