@@ -1195,7 +1195,7 @@ export function expandVocabulary(existingNodes: RawNode[]): RawNode[] {
             type: "character",
             hanzi: ch,
             pinyin: "",
-            meaning: `component of ${wn.hanzi}`,
+            meaning: `character in ${wn.hanzi}`,
             hskLevel: wn.hskLevel || 5,
           });
         }

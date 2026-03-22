@@ -42,7 +42,7 @@ export type DiagnosticQuestionFormat =
   | "character_to_meaning"
   | "meaning_to_character"
   | "sentence_context"
-  | "pinyin_to_character"
+  | "character_to_pinyin"
   | "reading_comprehension";
 
 export interface DiagnosticQuestion {

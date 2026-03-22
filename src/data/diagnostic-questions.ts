@@ -48,17 +48,6 @@ function findNodeByHanzi(
   return graph.find((n) => n.hanzi === hanzi);
 }
 
-function stripToneMarks(pinyin: string): string {
-  return pinyin
-    .toLowerCase()
-    .replace(/[āáǎà]/g, "a")
-    .replace(/[ēéěè]/g, "e")
-    .replace(/[īíǐì]/g, "i")
-    .replace(/[ōóǒò]/g, "o")
-    .replace(/[ūúǔù]/g, "u")
-    .replace(/[ǖǘǚǜ]/g, "ü");
-}
-
 function hasChinese(str: string): boolean {
   return /[\u4e00-\u9fff]/.test(str);
 }
@@ -68,20 +57,9 @@ function isValidDiagnosticNode(n: GraphNode): boolean {
     (n.type === "character" || n.type === "word") &&
     n.meaning.length > 0 &&
     !hasChinese(n.meaning) &&
-    !n.meaning.startsWith("component of")
+    !n.meaning.startsWith("component of") &&
+    !n.meaning.startsWith("character in")
   );
-}
-
-function getInitial(pinyin: string): string {
-  const stripped = stripToneMarks(pinyin);
-  const initials = [
-    "zh", "ch", "sh", "b", "p", "m", "f", "d", "t", "n", "l",
-    "g", "k", "h", "j", "q", "x", "z", "c", "s", "r", "y", "w",
-  ];
-  for (const init of initials) {
-    if (stripped.startsWith(init)) return init;
-  }
-  return "";
 }
 
 // --- Format 1: Character → Meaning ---
@@ -660,96 +638,164 @@ function generateSentenceContext(graph: GraphNode[]): DiagnosticQuestion[] {
   return questions;
 }
 
-// --- Format 4: Pinyin → Character ---
+// --- Format 4: Character → Pinyin (pronunciation) ---
 
-function generatePinyinToChar(byLevel: NodesByLevel): DiagnosticQuestion[] {
-  const questions: DiagnosticQuestion[] = [];
-  const rng = seededRandom("diag-f4-v2");
+const TONE_VARIANTS: Record<string, string[]> = {
+  a: ["ā", "á", "ǎ", "à"],
+  e: ["ē", "é", "ě", "è"],
+  i: ["ī", "í", "ǐ", "ì"],
+  o: ["ō", "ó", "ǒ", "ò"],
+  u: ["ū", "ú", "ǔ", "ù"],
+  ü: ["ǖ", "ǘ", "ǚ", "ǜ"],
+};
 
-  for (let level = 1; level <= 6; level++) {
-    const chars = byLevel[level].filter(
-      (n) => n.type === "character" && n.pinyin.length > 0
-    );
-    if (chars.length < 4) continue;
+const ALL_TONE_CHARS = new Set(
+  Object.values(TONE_VARIANTS).flat()
+);
 
-    const bySyllable: Record<string, GraphNode[]> = {};
-    for (const c of chars) {
-      const base = stripToneMarks(c.pinyin);
-      if (!bySyllable[base]) bySyllable[base] = [];
-      bySyllable[base].push(c);
+function getBaseVowel(char: string): string | null {
+  for (const [base, variants] of Object.entries(TONE_VARIANTS)) {
+    if (variants.includes(char)) return base;
+  }
+  return null;
+}
+
+function changeTone(syllable: string, newTone: number): string {
+  let result = "";
+  let changed = false;
+  for (const ch of syllable) {
+    const base = getBaseVowel(ch);
+    if (base && !changed) {
+      if (newTone >= 1 && newTone <= 4) {
+        result += TONE_VARIANTS[base][newTone - 1];
+      } else {
+        result += base;
+      }
+      changed = true;
+    } else {
+      result += ch;
     }
+  }
+  return result;
+}
 
-    const byInitial: Record<string, GraphNode[]> = {};
-    for (const c of chars) {
-      const init = getInitial(c.pinyin);
-      if (!byInitial[init]) byInitial[init] = [];
-      byInitial[init].push(c);
+function splitPinyinSyllables(pinyin: string): string[] {
+  const syllables: string[] = [];
+  let current = "";
+
+  for (let i = 0; i < pinyin.length; i++) {
+    const ch = pinyin[i];
+    if (ch === " " || ch === "'") {
+      if (current) syllables.push(current);
+      current = "";
+    } else if (
+      current.length > 0 &&
+      !ALL_TONE_CHARS.has(ch) &&
+      ch.match(/[a-zA-ZüÜ]/) &&
+      !current[current.length - 1].match(/[a-zA-ZüÜ]/) &&
+      !ALL_TONE_CHARS.has(current[current.length - 1])
+    ) {
+      syllables.push(current);
+      current = ch;
+    } else {
+      current += ch;
     }
+  }
+  if (current) syllables.push(current);
 
-    const usedTargets = new Set<string>();
-
-    for (const [, nodes] of Object.entries(bySyllable)) {
-      if (nodes.length < 2) continue;
-
-      for (const target of nodes) {
-        if (usedTargets.has(target.id)) continue;
-
-        const sameSyllableDistractors = nodes
-          .filter((n) => n.id !== target.id && n.hanzi !== target.hanzi)
-          .slice(0, 2);
-
-        const init = getInitial(target.pinyin);
-        const sameInitialDistractors = (byInitial[init] ?? []).filter(
-          (n) =>
-            n.id !== target.id &&
-            n.hanzi !== target.hanzi &&
-            !sameSyllableDistractors.some((d) => d.id === n.id)
-        );
-
-        const otherDistractors = seededShuffle(
-          chars.filter(
-            (n) =>
-              n.id !== target.id &&
-              n.hanzi !== target.hanzi &&
-              !sameSyllableDistractors.some((d) => d.id === n.id) &&
-              !sameInitialDistractors.some((d) => d.id === n.id)
-          ),
-          rng
-        );
-
-        const distractors = [
-          ...sameSyllableDistractors,
-          ...seededShuffle(sameInitialDistractors, rng),
-          ...otherDistractors,
-        ].slice(0, 3);
-
-        if (distractors.length < 3) continue;
-
-        const allOptions = [target.hanzi, ...distractors.map((d) => d.hanzi)];
-        const shuffled = seededShuffle(allOptions, rng);
-
-        questions.push({
-          id: `f4_${target.id}`,
-          format: "pinyin_to_character",
-          prompt: target.pinyin,
-          options: shuffled,
-          correctIndex: shuffled.indexOf(target.hanzi),
-          explanation: `${target.pinyin} is the pronunciation of ${target.hanzi}, meaning "${target.meaning}".`,
-          expectedSeconds: 12,
-          hskLevel: level,
-          targetNodeId: target.id,
-        });
-
-        usedTargets.add(target.id);
-
-        if (questions.filter((q) => q.hskLevel === level && q.format === "pinyin_to_character").length >= 8) {
-          break;
+  if (syllables.length === 1 && syllables[0].length > 6) {
+    const result: string[] = [];
+    let buf = "";
+    for (const ch of syllables[0]) {
+      buf += ch;
+      const base = getBaseVowel(ch);
+      if (base || "aeiouü".includes(ch)) {
+        const rest = syllables[0].slice(syllables[0].indexOf(ch) + 1);
+        if (rest.length > 0 && rest[0].match(/[^aeiouüāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/i)) {
+          continue;
         }
       }
-
-      if (questions.filter((q) => q.hskLevel === level && q.format === "pinyin_to_character").length >= 8) {
-        break;
+      if (ALL_TONE_CHARS.has(ch) && buf.length >= 2) {
+        result.push(buf);
+        buf = "";
       }
+    }
+    if (buf) result.push(buf);
+    if (result.length > 1) return result;
+  }
+
+  return syllables;
+}
+
+function generateToneDistractors(
+  correctPinyin: string,
+  rng: () => number,
+  count: number
+): string[] {
+  const syllables = splitPinyinSyllables(correctPinyin);
+  const distractors = new Set<string>();
+  const correctLower = correctPinyin.toLowerCase();
+
+  const tones = [1, 2, 3, 4];
+
+  for (let attempt = 0; attempt < 100 && distractors.size < count; attempt++) {
+    const newSyllables = syllables.map((syl) => {
+      if (rng() < 0.6) {
+        const newTone = tones[Math.floor(rng() * tones.length)];
+        return changeTone(syl, newTone);
+      }
+      return syl;
+    });
+
+    const candidate = newSyllables.join("");
+    if (candidate.toLowerCase() !== correctLower && candidate !== correctPinyin) {
+      distractors.add(candidate);
+    }
+  }
+
+  return [...distractors].slice(0, count);
+}
+
+function generateCharacterToPinyin(byLevel: NodesByLevel): DiagnosticQuestion[] {
+  const questions: DiagnosticQuestion[] = [];
+  const rng = seededRandom("diag-f4-v3");
+
+  for (let level = 1; level <= 6; level++) {
+    const nodes = byLevel[level].filter(
+      (n) =>
+        (n.type === "word" || n.type === "character") &&
+        n.pinyin.length > 0 &&
+        !n.meaning.startsWith("component of") &&
+        !n.meaning.startsWith("character in") &&
+        !hasChinese(n.meaning)
+    );
+    if (nodes.length < 4) continue;
+
+    const selected = seededShuffle(nodes, rng).slice(0, 12);
+    let levelCount = 0;
+
+    for (const target of selected) {
+      if (levelCount >= 8) break;
+
+      const distractorPinyins = generateToneDistractors(target.pinyin, rng, 3);
+      if (distractorPinyins.length < 3) continue;
+
+      const allOptions = [target.pinyin, ...distractorPinyins];
+      const shuffled = seededShuffle(allOptions, rng);
+
+      questions.push({
+        id: `f4_${target.id}`,
+        format: "character_to_pinyin",
+        prompt: target.hanzi,
+        options: shuffled,
+        correctIndex: shuffled.indexOf(target.pinyin),
+        explanation: `${target.hanzi} is pronounced ${target.pinyin}, meaning "${target.meaning}".`,
+        expectedSeconds: 12,
+        hskLevel: level,
+        targetNodeId: target.id,
+      });
+
+      levelCount++;
     }
   }
 
@@ -1151,7 +1197,7 @@ export function buildDiagnosticBank(graph: GraphNode[]): DiagnosticQuestion[] {
   questions.push(...generateCharToMeaning(byLevel));
   questions.push(...generateMeaningToChar(byLevel));
   questions.push(...generateSentenceContext(graph));
-  questions.push(...generatePinyinToChar(byLevel));
+  questions.push(...generateCharacterToPinyin(byLevel));
   questions.push(...getReadingComprehensionQuestions());
 
   cachedBank = questions;

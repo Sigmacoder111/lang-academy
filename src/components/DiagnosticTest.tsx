@@ -265,9 +265,9 @@ function QuestionRenderer({
           onNext={onNext}
         />
       );
-    case "pinyin_to_character":
+    case "character_to_pinyin":
       return (
-        <PinyinToCharView
+        <CharToPinyinView
           question={question}
           selectedIndex={selectedIndex}
           onAnswer={onAnswer}
@@ -387,15 +387,15 @@ function SentenceContextView({ question, selectedIndex, onAnswer, showExplanatio
   );
 }
 
-// --- Format 4: Pinyin → Character ---
+// --- Format 4: Character → Pinyin (pronunciation) ---
 
-function PinyinToCharView({ question, selectedIndex, onAnswer, showExplanation, onNext }: FormatViewProps) {
+function CharToPinyinView({ question, selectedIndex, onAnswer, showExplanation, onNext }: FormatViewProps) {
   return (
     <>
       <div style={{ marginBottom: "0.75rem" }}>
-        <span style={formatLabelStyle}>Which character is pronounced:</span>
+        <span style={formatLabelStyle}>What is the pronunciation of:</span>
       </div>
-      <div style={pinyinDisplayStyle}>
+      <div style={hanziDisplayStyle}>
         {question.prompt}
       </div>
       <OptionsList
@@ -403,7 +403,7 @@ function PinyinToCharView({ question, selectedIndex, onAnswer, showExplanation, 
         correctIndex={question.correctIndex}
         selectedIndex={selectedIndex}
         onAnswer={onAnswer}
-        isChinese={true}
+        isChinese={false}
       />
       <ExplanationBlock
         show={showExplanation}
@@ -700,18 +700,6 @@ const meaningDisplayStyle: React.CSSProperties = {
   textAlign: "center" as const,
   padding: "1.25rem 0",
   marginBottom: "1.5rem",
-};
-
-const pinyinDisplayStyle: React.CSSProperties = {
-  fontFamily: "Georgia, 'Times New Roman', serif",
-  fontSize: "2rem",
-  fontWeight: 700,
-  color: "var(--accent)",
-  textAlign: "center" as const,
-  padding: "1.25rem 0",
-  marginBottom: "1.5rem",
-  background: "var(--bg-primary)",
-  borderRadius: "0.75rem",
 };
 
 const sentenceDisplayStyle: React.CSSProperties = {
