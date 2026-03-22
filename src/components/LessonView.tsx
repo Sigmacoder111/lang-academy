@@ -3,6 +3,7 @@ import type { GraphNode } from "../types/graph";
 import type { TaskResult, MCQuestion } from "../types/tasks";
 import { generateMCQuestions } from "../engine/tasks";
 import { GRAPH } from "../data/graph";
+import ErrorCorrectionFlow from "./ErrorCorrectionFlow";
 
 interface LessonViewProps {
   topic: GraphNode;
@@ -28,6 +29,9 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
   const [bonusXP, setBonusXP] = useState(0);
   const [showPinyin, setShowPinyin] = useState(false);
   const [showModelResponse, setShowModelResponse] = useState(false);
+  const [showErrorCorrection, setShowErrorCorrection] = useState(false);
+  const [retestQueue, setRetestQueue] = useState<number[]>([]);
+  const [retestCountdown, setRetestCountdown] = useState(0);
 
   useEffect(() => {
     if (!timerActive) return;
@@ -38,7 +42,6 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
   const handleAnswer = useCallback((idx: number) => {
     if (selectedAnswer !== null) return;
     setSelectedAnswer(idx);
-    setShowExplanation(true);
     setTimerActive(false);
     setTotalAnswered((a) => a + 1);
 
@@ -46,15 +49,20 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
     if (correct) {
       setTotalCorrect((c) => c + 1);
       setConsecutiveCorrect((c) => c + 1);
+      setShowExplanation(true);
     } else {
       setConsecutiveCorrect(0);
+      setShowErrorCorrection(true);
       const extraQs = generateMCQuestions(topic, GRAPH, 2);
       setQuestions((qs) => [...qs, ...extraQs]);
+      setRetestQueue((prev) => [...prev, currentQ]);
+      setRetestCountdown(3);
     }
   }, [selectedAnswer, questions, currentQ, topic]);
 
   const advanceQuestion = useCallback(() => {
     setShowModelResponse(false);
+    setShowErrorCorrection(false);
     if (consecutiveCorrect >= 2 && currentQ >= 1) {
       const perfect = totalCorrect === totalAnswered;
       const base = 10;
@@ -70,6 +78,21 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
     setTimer(0);
     setTimerActive(true);
 
+    // Decrement re-test countdown; if it hits 0, re-insert the missed question
+    if (retestCountdown > 0) {
+      const newCountdown = retestCountdown - 1;
+      setRetestCountdown(newCountdown);
+      if (newCountdown === 0 && retestQueue.length > 0) {
+        const retestIdx = retestQueue[0];
+        const retestQ = questions[retestIdx];
+        if (retestQ) {
+          const retestCopy: MCQuestion = { ...retestQ };
+          setQuestions((qs) => [...qs, retestCopy]);
+          setRetestQueue((prev) => prev.slice(1));
+        }
+      }
+    }
+
     if (currentQ + 1 < questions.length) {
       setCurrentQ((q) => q + 1);
     } else {
@@ -77,7 +100,7 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
       setQuestions((qs) => [...qs, ...extraQs]);
       setCurrentQ((q) => q + 1);
     }
-  }, [consecutiveCorrect, currentQ, questions.length, topic, totalCorrect, totalAnswered]);
+  }, [consecutiveCorrect, currentQ, questions, topic, totalCorrect, totalAnswered, retestCountdown, retestQueue]);
 
   const handleComplete = useCallback(() => {
     onComplete({
@@ -576,14 +599,23 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
             })}
           </div>
 
-          {/* Explanation + Model Response for writing */}
-          {showExplanation && (
+          {/* Error correction flow for wrong answers */}
+          {showErrorCorrection && selectedAnswer !== null && !isCorrect && (
+            <ErrorCorrectionFlow
+              question={q}
+              selectedAnswer={selectedAnswer}
+              onComplete={advanceQuestion}
+            />
+          )}
+
+          {/* Explanation for correct answers */}
+          {showExplanation && isCorrect && (
             <div
               style={{
                 marginTop: "1rem",
                 padding: "1rem",
                 borderRadius: "0.75rem",
-                background: isCorrect ? "rgba(74, 140, 111, 0.08)" : "rgba(193, 95, 60, 0.08)",
+                background: "rgba(74, 140, 111, 0.08)",
                 animation: "fadeIn 0.3s ease",
               }}
             >
@@ -592,11 +624,11 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
                   fontFamily: "Georgia, 'Times New Roman', serif",
                   fontSize: "14px",
                   fontWeight: 600,
-                  color: isCorrect ? "var(--success)" : "var(--error)",
+                  color: "var(--success)",
                   marginBottom: "0.25rem",
                 }}
               >
-                {isCorrect ? "Correct!" : "Incorrect"}
+                Correct!
               </div>
               <div
                 style={{
@@ -608,7 +640,6 @@ export default function LessonView({ topic, onComplete, onBack }: LessonViewProp
                 {q.explanation}
               </div>
 
-              {/* Writing model response toggle */}
               {q.modelResponse && (
                 <div style={{ marginTop: "0.75rem" }}>
                   <button
