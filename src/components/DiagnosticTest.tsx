@@ -131,6 +131,23 @@ export default function DiagnosticTest({
     [selectedIndex, currentQuestion, state, stopTimer]
   );
 
+  const handleDontKnow = useCallback(() => {
+    if (selectedIndex !== null || !currentQuestion || !state) return;
+    stopTimer();
+    setSelectedIndex(-1);
+    setShowExplanation(true);
+
+    const newState = recordDiagnosticResponse(
+      state,
+      currentQuestion,
+      false,
+      0,
+    );
+
+    setState(newState);
+    saveDiagnosticState(newState);
+  }, [selectedIndex, currentQuestion, state, stopTimer]);
+
   const handleNext = useCallback(() => {
     if (!state) return;
     loadNextProblem(state);
@@ -204,6 +221,7 @@ export default function DiagnosticTest({
           question={currentQuestion}
           selectedIndex={selectedIndex}
           onAnswer={handleAnswer}
+          onDontKnow={handleDontKnow}
           showExplanation={showExplanation}
           onNext={handleNext}
         />
@@ -225,12 +243,14 @@ function QuestionRenderer({
   question,
   selectedIndex,
   onAnswer,
+  onDontKnow,
   showExplanation,
   onNext,
 }: {
   question: DiagnosticQuestion;
   selectedIndex: number | null;
   onAnswer: (index: number) => void;
+  onDontKnow: () => void;
   showExplanation: boolean;
   onNext: () => void;
 }) {
@@ -241,6 +261,7 @@ function QuestionRenderer({
           question={question}
           selectedIndex={selectedIndex}
           onAnswer={onAnswer}
+          onDontKnow={onDontKnow}
           showExplanation={showExplanation}
           onNext={onNext}
         />
@@ -251,6 +272,7 @@ function QuestionRenderer({
           question={question}
           selectedIndex={selectedIndex}
           onAnswer={onAnswer}
+          onDontKnow={onDontKnow}
           showExplanation={showExplanation}
           onNext={onNext}
         />
@@ -261,6 +283,7 @@ function QuestionRenderer({
           question={question}
           selectedIndex={selectedIndex}
           onAnswer={onAnswer}
+          onDontKnow={onDontKnow}
           showExplanation={showExplanation}
           onNext={onNext}
         />
@@ -271,6 +294,7 @@ function QuestionRenderer({
           question={question}
           selectedIndex={selectedIndex}
           onAnswer={onAnswer}
+          onDontKnow={onDontKnow}
           showExplanation={showExplanation}
           onNext={onNext}
         />
@@ -281,6 +305,7 @@ function QuestionRenderer({
           question={question}
           selectedIndex={selectedIndex}
           onAnswer={onAnswer}
+          onDontKnow={onDontKnow}
           showExplanation={showExplanation}
           onNext={onNext}
         />
@@ -294,13 +319,14 @@ interface FormatViewProps {
   question: DiagnosticQuestion;
   selectedIndex: number | null;
   onAnswer: (index: number) => void;
+  onDontKnow: () => void;
   showExplanation: boolean;
   onNext: () => void;
 }
 
 // --- Format 1: Character → Meaning ---
 
-function CharToMeaningView({ question, selectedIndex, onAnswer, showExplanation, onNext }: FormatViewProps) {
+function CharToMeaningView({ question, selectedIndex, onAnswer, onDontKnow, showExplanation, onNext }: FormatViewProps) {
   return (
     <>
       <div style={{ marginBottom: "0.75rem" }}>
@@ -314,6 +340,7 @@ function CharToMeaningView({ question, selectedIndex, onAnswer, showExplanation,
         correctIndex={question.correctIndex}
         selectedIndex={selectedIndex}
         onAnswer={onAnswer}
+        onDontKnow={onDontKnow}
         isChinese={false}
       />
       <ExplanationBlock
@@ -321,6 +348,7 @@ function CharToMeaningView({ question, selectedIndex, onAnswer, showExplanation,
         correct={selectedIndex === question.correctIndex}
         explanation={question.explanation}
         onNext={onNext}
+        isDontKnow={selectedIndex === -1}
       />
     </>
   );
@@ -328,7 +356,7 @@ function CharToMeaningView({ question, selectedIndex, onAnswer, showExplanation,
 
 // --- Format 2: Meaning → Character ---
 
-function MeaningToCharView({ question, selectedIndex, onAnswer, showExplanation, onNext }: FormatViewProps) {
+function MeaningToCharView({ question, selectedIndex, onAnswer, onDontKnow, showExplanation, onNext }: FormatViewProps) {
   return (
     <>
       <div style={{ marginBottom: "0.75rem" }}>
@@ -342,6 +370,7 @@ function MeaningToCharView({ question, selectedIndex, onAnswer, showExplanation,
         correctIndex={question.correctIndex}
         selectedIndex={selectedIndex}
         onAnswer={onAnswer}
+        onDontKnow={onDontKnow}
         isChinese={true}
       />
       <ExplanationBlock
@@ -349,6 +378,7 @@ function MeaningToCharView({ question, selectedIndex, onAnswer, showExplanation,
         correct={selectedIndex === question.correctIndex}
         explanation={question.explanation}
         onNext={onNext}
+        isDontKnow={selectedIndex === -1}
       />
     </>
   );
@@ -356,7 +386,7 @@ function MeaningToCharView({ question, selectedIndex, onAnswer, showExplanation,
 
 // --- Format 3: Sentence Context ---
 
-function SentenceContextView({ question, selectedIndex, onAnswer, showExplanation, onNext }: FormatViewProps) {
+function SentenceContextView({ question, selectedIndex, onAnswer, onDontKnow, showExplanation, onNext }: FormatViewProps) {
   return (
     <>
       <div style={{ marginBottom: "0.75rem" }}>
@@ -375,6 +405,7 @@ function SentenceContextView({ question, selectedIndex, onAnswer, showExplanatio
         correctIndex={question.correctIndex}
         selectedIndex={selectedIndex}
         onAnswer={onAnswer}
+        onDontKnow={onDontKnow}
         isChinese={true}
       />
       <ExplanationBlock
@@ -382,6 +413,7 @@ function SentenceContextView({ question, selectedIndex, onAnswer, showExplanatio
         correct={selectedIndex === question.correctIndex}
         explanation={question.explanation}
         onNext={onNext}
+        isDontKnow={selectedIndex === -1}
       />
     </>
   );
@@ -389,7 +421,7 @@ function SentenceContextView({ question, selectedIndex, onAnswer, showExplanatio
 
 // --- Format 4: Character → Pinyin (pronunciation) ---
 
-function CharToPinyinView({ question, selectedIndex, onAnswer, showExplanation, onNext }: FormatViewProps) {
+function CharToPinyinView({ question, selectedIndex, onAnswer, onDontKnow, showExplanation, onNext }: FormatViewProps) {
   return (
     <>
       <div style={{ marginBottom: "0.75rem" }}>
@@ -403,6 +435,7 @@ function CharToPinyinView({ question, selectedIndex, onAnswer, showExplanation, 
         correctIndex={question.correctIndex}
         selectedIndex={selectedIndex}
         onAnswer={onAnswer}
+        onDontKnow={onDontKnow}
         isChinese={false}
       />
       <ExplanationBlock
@@ -410,6 +443,7 @@ function CharToPinyinView({ question, selectedIndex, onAnswer, showExplanation, 
         correct={selectedIndex === question.correctIndex}
         explanation={question.explanation}
         onNext={onNext}
+        isDontKnow={selectedIndex === -1}
       />
     </>
   );
@@ -417,7 +451,7 @@ function CharToPinyinView({ question, selectedIndex, onAnswer, showExplanation, 
 
 // --- Format 5: Reading Comprehension ---
 
-function ReadingCompView({ question, selectedIndex, onAnswer, showExplanation, onNext }: FormatViewProps) {
+function ReadingCompView({ question, selectedIndex, onAnswer, onDontKnow, showExplanation, onNext }: FormatViewProps) {
   return (
     <>
       <div style={{ marginBottom: "0.75rem" }}>
@@ -436,6 +470,7 @@ function ReadingCompView({ question, selectedIndex, onAnswer, showExplanation, o
         correctIndex={question.correctIndex}
         selectedIndex={selectedIndex}
         onAnswer={onAnswer}
+        onDontKnow={onDontKnow}
         isChinese={false}
       />
       <ExplanationBlock
@@ -443,6 +478,7 @@ function ReadingCompView({ question, selectedIndex, onAnswer, showExplanation, o
         correct={selectedIndex === question.correctIndex}
         explanation={question.explanation}
         onNext={onNext}
+        isDontKnow={selectedIndex === -1}
       />
     </>
   );
@@ -455,12 +491,14 @@ function OptionsList({
   correctIndex,
   selectedIndex,
   onAnswer,
+  onDontKnow,
   isChinese,
 }: {
   options: string[];
   correctIndex: number;
   selectedIndex: number | null;
   onAnswer: (index: number) => void;
+  onDontKnow?: () => void;
   isChinese: boolean;
 }) {
   const answered = selectedIndex !== null;
@@ -517,6 +555,35 @@ function OptionsList({
           </button>
         );
       })}
+
+      {onDontKnow && !answered && (
+        <>
+          <div style={{
+            height: "1px",
+            background: "var(--border)",
+            margin: "0.25rem 0",
+          }} />
+          <button
+            onClick={onDontKnow}
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "0.625rem 1.25rem",
+              background: "transparent",
+              border: "1px solid var(--border)",
+              borderRadius: "0.75rem",
+              cursor: "pointer",
+              textAlign: "center" as const,
+              fontFamily: "Georgia, 'Times New Roman', serif",
+              fontSize: "0.875rem",
+              color: "var(--text-muted)",
+              transition: "all 0.15s ease",
+            }}
+          >
+            I don't know this
+          </button>
+        </>
+      )}
     </div>
   );
 }
@@ -526,13 +593,17 @@ function ExplanationBlock({
   correct,
   explanation,
   onNext,
+  isDontKnow,
 }: {
   show: boolean;
   correct: boolean;
   explanation: string;
   onNext: () => void;
+  isDontKnow?: boolean;
 }) {
   if (!show) return null;
+
+  const label = isDontKnow ? "No worries!" : correct ? "Correct!" : "Incorrect.";
 
   return (
     <div style={explanationContainerStyle}>
@@ -545,7 +616,7 @@ function ExplanationBlock({
         }}
       >
         <p style={{ margin: 0, ...textStyle, fontSize: "14px" }}>
-          {correct ? "Correct!" : "Incorrect."} {explanation}
+          {label} {explanation}
         </p>
       </div>
       <button onClick={onNext} style={nextBtnStyle}>
