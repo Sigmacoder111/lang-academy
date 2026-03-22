@@ -15,19 +15,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
     ],
     "steps": [
       {
-        "instruction": "The host greets you. How do you respond?",
-        "question": "What does \"江\" mean?",
-        "options": [
-          "component of 兵马俑",
-          "component of 长江",
-          "to move/carry",
-          "skill/technology"
-        ],
-        "correctIndex": 1,
-        "explanation": "江 () means \"component of 长江\".",
-        "hint": "Think about basic greetings"
-      },
-      {
         "instruction": "The waiter asks how many people. What's the measure word for people?",
         "question": "Which character means \"to analyze\"?",
         "options": [
@@ -52,30 +39,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "议论文:教育 is pronounced yìlùnwén: jiàoyù."
       },
       {
-        "instruction": "The waiter recommends a dish. Understand the description.",
-        "question": "What does \"承\" mean?",
-        "options": [
-          "component of 慈善",
-          "component of 承担",
-          "Go (board game)",
-          "component of 捐款"
-        ],
-        "correctIndex": 1,
-        "explanation": "承 () means \"component of 承担\"."
-      },
-      {
-        "instruction": "You want to order tea. How do you say it?",
-        "question": "Which character means \"component of 一直\"?",
-        "options": [
-          "裤子",
-          "一",
-          "胖",
-          "捐款"
-        ],
-        "correctIndex": 1,
-        "explanation": "\"component of 一直\" is written as 一 ()."
-      },
-      {
         "instruction": "Ask the waiter how much the dish costs.",
         "question": "How do you pronounce \"奉献\"?",
         "options": [
@@ -92,7 +55,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"气质\" mean?",
         "options": [
           "temperament/aura",
-          "component of 头痛",
+          "vacation",
           "seek truth from facts",
           "to dare"
         ],
@@ -122,18 +85,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 3,
         "explanation": "鞋子 is pronounced xiézi."
-      },
-      {
-        "instruction": "Thank the waiter as you leave.",
-        "question": "What does \"材\" mean?",
-        "options": [
-          "component of 因材施教",
-          "component of 绘画",
-          "to criticize",
-          "component of 商店"
-        ],
-        "correctIndex": 0,
-        "explanation": "材 () means \"component of 因材施教\"."
       }
     ]
   },
@@ -154,25 +105,13 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "The teacher asks your name. Introduce yourself.",
         "question": "What does \"杂志\" mean?",
         "options": [
-          "component of 啤酒",
+          "hollow",
           "carbon dioxide",
           "magazine",
           "rich/wealthy"
         ],
         "correctIndex": 2,
         "explanation": "杂志 (zázhì) means \"magazine\"."
-      },
-      {
-        "instruction": "Where are you from? State your nationality.",
-        "question": "Which character means \"component of 简单\"?",
-        "options": [
-          "谐",
-          "简",
-          "经",
-          "饭店"
-        ],
-        "correctIndex": 1,
-        "explanation": "\"component of 简单\" is written as 简 ()."
       },
       {
         "instruction": "The teacher introduces you to the class. Understand the introduction.",
@@ -223,18 +162,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "基尼系数 is pronounced jīní xìshù."
       },
       {
-        "instruction": "Your new friend invites you to lunch. Respond appropriately.",
-        "question": "What does \"碳\" mean?",
-        "options": [
-          "component of 医疗保障",
-          "component of 碳排放",
-          "to announce/declare",
-          "often/frequently"
-        ],
-        "correctIndex": 1,
-        "explanation": "碳 () means \"component of 碳排放\"."
-      },
-      {
         "instruction": "At lunch, discuss your favorite food.",
         "question": "Which character means \"disaster relief\"?",
         "options": [
@@ -263,7 +190,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"安\" mean?",
         "options": [
           "to break/broken",
-          "component of 杂志",
+          "situation/condition",
           "assign/duty",
           "safe/peaceful"
         ],
@@ -285,18 +212,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
       "w_73b05b9e"
     ],
     "steps": [
-      {
-        "instruction": "Start the letter with a proper greeting.",
-        "question": "What does \"碗\" mean?",
-        "options": [
-          "to shrink/reduce",
-          "component of 碗",
-          "waiter/attendant",
-          "complaint"
-        ],
-        "correctIndex": 1,
-        "explanation": "碗 () means \"component of 碗\"."
-      },
       {
         "instruction": "Introduce your name and age.",
         "question": "Which character means \"poverty alleviation\"?",
@@ -322,30 +237,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "号 is pronounced ."
       },
       {
-        "instruction": "Talk about what you study at school.",
-        "question": "What does \"锻\" mean?",
-        "options": [
-          "topic/question",
-          "front/before",
-          "component of 锻炼",
-          "Seeing a doctor passage"
-        ],
-        "correctIndex": 2,
-        "explanation": "锻 () means \"component of 锻炼\"."
-      },
-      {
-        "instruction": "Mention your hobbies and interests.",
-        "question": "Which character means \"component of 而且\"?",
-        "options": [
-          "而",
-          "和谐",
-          "送",
-          "垃圾分类"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 而且\" is written as 而 ()."
-      },
-      {
         "instruction": "Ask about their family.",
         "question": "How do you pronounce \"滑\"?",
         "options": [
@@ -363,23 +254,11 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "deep/profound",
           "unique/distinctive",
-          "component of 脚踏实地",
-          "component of 悲剧"
+          "horizon",
+          "magazine"
         ],
         "correctIndex": 1,
         "explanation": "别具一格 (bié jù yī gé) means \"unique/distinctive\"."
-      },
-      {
-        "instruction": "Ask about the weather in their city.",
-        "question": "Which character means \"component of 因为\"?",
-        "options": [
-          "联",
-          "艺术",
-          "礼",
-          "为"
-        ],
-        "correctIndex": 3,
-        "explanation": "\"component of 因为\" is written as 为 ()."
       },
       {
         "instruction": "Ask what food they recommend.",
@@ -392,18 +271,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 0,
         "explanation": "植物园 is pronounced zhíwùyuán."
-      },
-      {
-        "instruction": "Close the letter politely.",
-        "question": "What does \"样\" mean?",
-        "options": [
-          "component of 辐射",
-          "willing/wish",
-          "clean/pure",
-          "component of 文化多样性"
-        ],
-        "correctIndex": 3,
-        "explanation": "样 () means \"component of 文化多样性\"."
       }
     ]
   },
@@ -424,25 +291,13 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "A vendor calls out. What are they selling?",
         "question": "What does \"教育\" mean?",
         "options": [
-          "component of 湖泊",
+          "heritage",
           "education",
-          "component of 绘画",
+          "to vote",
           "to receive/bear"
         ],
         "correctIndex": 1,
         "explanation": "教育 (jiàoyù) means \"education\"."
-      },
-      {
-        "instruction": "Ask how much something costs.",
-        "question": "Which character means \"component of 卫星\"?",
-        "options": [
-          "把+Object+Verb",
-          "记忆",
-          "卫",
-          "搜"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 卫星\" is written as 卫 ()."
       },
       {
         "instruction": "The vendor says a price. Understand the number.",
@@ -455,18 +310,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 2,
         "explanation": "慈 is pronounced ."
-      },
-      {
-        "instruction": "That's too expensive! How do you say it?",
-        "question": "What does \"奉\" mean?",
-        "options": [
-          "rich/wealthy",
-          "component of 举一反三",
-          "component of 奉献",
-          "superficial/shallow"
-        ],
-        "correctIndex": 2,
-        "explanation": "奉 () means \"component of 奉献\"."
       },
       {
         "instruction": "Try to bargain. Offer a lower price.",
@@ -491,18 +334,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 1,
         "explanation": "著 is pronounced ."
-      },
-      {
-        "instruction": "Ask for a specific quantity.",
-        "question": "What does \"盾\" mean?",
-        "options": [
-          "video conference",
-          "component of 矛盾",
-          "component of 敬佩",
-          "China's economic development passage"
-        ],
-        "correctIndex": 1,
-        "explanation": "盾 () means \"component of 矛盾\"."
       },
       {
         "instruction": "The vendor gives you change. Count it.",
@@ -532,10 +363,10 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Thank the vendor and say goodbye.",
         "question": "What does \"男孩\" mean?",
         "options": [
-          "component of 补偿",
+          "shadow",
           "boy",
-          "component of 激烈",
-          "component of 着急"
+          "competition/match",
+          "doctorate/Ph.D."
         ],
         "correctIndex": 1,
         "explanation": "男孩 (nánhái) means \"boy\"."
@@ -568,18 +399,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "鱼 (yú) means \"fish\"."
       },
       {
-        "instruction": "Tell the receptionist you need to see a doctor.",
-        "question": "Which character means \"component of 生命\"?",
-        "options": [
-          "生物",
-          "析",
-          "命",
-          "妹"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 生命\" is written as 命 ()."
-      },
-      {
         "instruction": "The doctor asks what's wrong. Describe your symptom.",
         "question": "How do you pronounce \"月亮\"?",
         "options": [
@@ -590,18 +409,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 3,
         "explanation": "月亮 is pronounced yuèliang."
-      },
-      {
-        "instruction": "How long have you been sick? Express duration.",
-        "question": "What does \"金\" mean?",
-        "options": [
-          "duty/responsibility",
-          "to publish",
-          "component of 奖学金",
-          "fragrant/delicious"
-        ],
-        "correctIndex": 2,
-        "explanation": "金 () means \"component of 奖学金\"."
       },
       {
         "instruction": "The doctor examines you. Understand their question about body parts.",
@@ -626,18 +433,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 0,
         "explanation": "响 is pronounced xiǎng."
-      },
-      {
-        "instruction": "Ask how many times a day to take the medicine.",
-        "question": "What does \"监\" mean?",
-        "options": [
-          "component of 监狱",
-          "component of 头痛",
-          "sense of belonging",
-          "street"
-        ],
-        "correctIndex": 0,
-        "explanation": "监 () means \"component of 监狱\"."
       },
       {
         "instruction": "The doctor advises rest. Understand the advice.",
@@ -696,23 +491,11 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "driver",
           "clean/pure",
-          "component of 乐观",
+          "joyful",
           "world/era"
         ],
         "correctIndex": 0,
         "explanation": "司机 (sījī) means \"driver\"."
-      },
-      {
-        "instruction": "Buy a ticket. How do you say you want to go to a place?",
-        "question": "Which character means \"component of 信封\"?",
-        "options": [
-          "要",
-          "封",
-          "档案",
-          "缺乏"
-        ],
-        "correctIndex": 1,
-        "explanation": "\"component of 信封\" is written as 封 ()."
       },
       {
         "instruction": "Read the station name on the map.",
@@ -725,18 +508,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 0,
         "explanation": "给+Sb+Verb is pronounced gěi + sb + verb."
-      },
-      {
-        "instruction": "Which direction should you go? Understand directions.",
-        "question": "What does \"朗\" mean?",
-        "options": [
-          "creativity",
-          "government/prefecture",
-          "component of 开朗",
-          "text/culture"
-        ],
-        "correctIndex": 2,
-        "explanation": "朗 () means \"component of 开朗\"."
       },
       {
         "instruction": "The announcement says the next stop. Listen and understand.",
@@ -763,30 +534,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "冠 is pronounced ."
       },
       {
-        "instruction": "Transfer to another line. Follow the signs.",
-        "question": "What does \"饭\" mean?",
-        "options": [
-          "component of 饭店",
-          "to dare",
-          "sense of mission",
-          "City life passage"
-        ],
-        "correctIndex": 0,
-        "explanation": "饭 () means \"component of 饭店\"."
-      },
-      {
-        "instruction": "You've arrived! How do you say 'I've arrived'?",
-        "question": "Which character means \"component of 农村\"?",
-        "options": [
-          "村",
-          "世界观",
-          "沟通",
-          "泊"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 农村\" is written as 村 ()."
-      },
-      {
         "instruction": "Find the exit. What does 出口 mean?",
         "question": "How do you pronounce \"擦\"?",
         "options": [
@@ -797,18 +544,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 2,
         "explanation": "擦 is pronounced cā."
-      },
-      {
-        "instruction": "Ask for directions to your final destination.",
-        "question": "What does \"终\" mean?",
-        "options": [
-          "trade/commerce",
-          "restaurant/hotel",
-          "component of 终于",
-          "comment/review"
-        ],
-        "correctIndex": 2,
-        "explanation": "终 () means \"component of 终于\"."
       }
     ]
   },
@@ -830,24 +565,12 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"联系\" mean?",
         "options": [
           "Emphasis on time/place/manner",
-          "component of 句子",
+          "landscape",
           "to contact/connection",
           "cold"
         ],
         "correctIndex": 2,
         "explanation": "联系 (liánxì) means \"to contact/connection\"."
-      },
-      {
-        "instruction": "Learn about the tradition of giving red envelopes.",
-        "question": "Which character means \"component of 刷卡\"?",
-        "options": [
-          "经济",
-          "刺",
-          "翻译",
-          "卡"
-        ],
-        "correctIndex": 3,
-        "explanation": "\"component of 刷卡\" is written as 卡 ()."
       },
       {
         "instruction": "Help prepare traditional foods. What is 饺子?",
@@ -866,7 +589,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"诚恳\" mean?",
         "options": [
           "sincere/earnest",
-          "component of 显著",
+          "mild",
           "to come",
           "package/parcel"
         ],
@@ -939,7 +662,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "big data",
           "moreover/and also",
-          "component of 缩小",
+          "younger brother",
           "to send/deliver"
         ],
         "correctIndex": 1,
@@ -961,30 +684,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
     ],
     "steps": [
       {
-        "instruction": "Create your profile. Fill in your name.",
-        "question": "What does \"慕\" mean?",
-        "options": [
-          "component of 羡慕",
-          "component of 公共汽车",
-          "loss/damage",
-          "if"
-        ],
-        "correctIndex": 0,
-        "explanation": "慕 () means \"component of 羡慕\"."
-      },
-      {
-        "instruction": "Write a short self-introduction.",
-        "question": "Which character means \"component of 骄傲\"?",
-        "options": [
-          "认",
-          "长江",
-          "傲",
-          "太极"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 骄傲\" is written as 傲 ()."
-      },
-      {
         "instruction": "Someone sends you a friend request. Accept and greet them.",
         "question": "How do you pronounce \"非\"?",
         "options": [
@@ -995,18 +694,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 2,
         "explanation": "非 is pronounced ."
-      },
-      {
-        "instruction": "They ask where you're from. Respond.",
-        "question": "What does \"律\" mean?",
-        "options": [
-          "public",
-          "component of 再见",
-          "component of 律师",
-          "riddle-like saying"
-        ],
-        "correctIndex": 2,
-        "explanation": "律 () means \"component of 律师\"."
       },
       {
         "instruction": "Share your interests.",
@@ -1045,18 +732,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "字 (zì) means \"character/word\"."
       },
       {
-        "instruction": "Plan to video chat. Suggest a time.",
-        "question": "Which character means \"component of 模糊\"?",
-        "options": [
-          "赖",
-          "嘴",
-          "犹",
-          "模"
-        ],
-        "correctIndex": 3,
-        "explanation": "\"component of 模糊\" is written as 模 ()."
-      },
-      {
         "instruction": "Learn internet slang. What does 哈哈 mean?",
         "question": "How do you pronounce \"和平共处\"?",
         "options": [
@@ -1072,10 +747,10 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Say goodbye and make plans to chat again.",
         "question": "What does \"力\" mean?",
         "options": [
-          "component of 偏旁",
+          "horizon",
           "power/strength",
           "To tell/make someone do",
-          "component of 食堂"
+          "beside/next to"
         ],
         "correctIndex": 1,
         "explanation": "力 (lì) means \"power/strength\"."
@@ -1096,30 +771,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
     ],
     "steps": [
       {
-        "instruction": "Buy tickets at the entrance. How much are they?",
-        "question": "What does \"部\" mean?",
-        "options": [
-          "poor/poverty",
-          "component of 部首",
-          "A is more... than B",
-          "Forbidden City"
-        ],
-        "correctIndex": 1,
-        "explanation": "部 () means \"component of 部首\"."
-      },
-      {
-        "instruction": "Read the museum map. Find the ancient history section.",
-        "question": "Which character means \"component of 录取\"?",
-        "options": [
-          "邮票",
-          "取",
-          "发达国家",
-          "口"
-        ],
-        "correctIndex": 1,
-        "explanation": "\"component of 录取\" is written as 取 ()."
-      },
-      {
         "instruction": "Learn about the Great Wall. What is it called in Chinese?",
         "question": "How do you pronounce \"婴\"?",
         "options": [
@@ -1138,7 +789,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "standard/grid",
           "public",
           "to express/indicate",
-          "component of 配送"
+          "thick"
         ],
         "correctIndex": 0,
         "explanation": "格 (gé) means \"standard/grid\"."
@@ -1172,7 +823,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"我\" mean?",
         "options": [
           "I/me",
-          "component of 空调",
+          "monument",
           "extracurricular activity",
           "loud/echo"
         ],
@@ -1202,18 +853,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 0,
         "explanation": "烧 is pronounced ."
-      },
-      {
-        "instruction": "Write a postcard about your visit.",
-        "question": "What does \"牛\" mean?",
-        "options": [
-          "component of 律师",
-          "seeing is believing",
-          "component of 仪式",
-          "component of 牛肉"
-        ],
-        "correctIndex": 3,
-        "explanation": "牛 () means \"component of 牛肉\"."
       }
     ]
   },
@@ -1309,7 +948,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "Self-introduction passage",
           "table/express",
           "mathematics",
-          "component of 记者"
+          "navigate"
         ],
         "correctIndex": 2,
         "explanation": "数学 (shùxué) means \"mathematics\"."
@@ -1366,18 +1005,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
     ],
     "steps": [
       {
-        "instruction": "Read the recipe title. What dish are you making?",
-        "question": "What does \"逐\" mean?",
-        "options": [
-          "component of 逐渐",
-          "component of 阳台",
-          "component of 军人",
-          "star"
-        ],
-        "correctIndex": 0,
-        "explanation": "逐 () means \"component of 逐渐\"."
-      },
-      {
         "instruction": "Identify the ingredients. What does 鸡蛋 mean?",
         "question": "Which character means \"to finish/complete\"?",
         "options": [
@@ -1405,9 +1032,9 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "The recipe says to wash the vegetables. What verb is used?",
         "question": "What does \"放弃\" mean?",
         "options": [
-          "component of 表达",
+          "ambitious",
           "to give up/abandon",
-          "component of 汉字",
+          "ancient",
           "classmate"
         ],
         "correctIndex": 1,
@@ -1441,25 +1068,13 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Add the seasoning. What is 盐?",
         "question": "What does \"节\" mean?",
         "options": [
-          "component of 拥堵",
+          "jungle",
           "rich/abundant",
           "breakfast",
           "festival/segment"
         ],
         "correctIndex": 3,
         "explanation": "节 (jié) means \"festival/segment\"."
-      },
-      {
-        "instruction": "Stir-fry the dish. How long should you cook it?",
-        "question": "Which character means \"component of 但是\"?",
-        "options": [
-          "捡",
-          "务",
-          "但",
-          "合作"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 但是\" is written as 但 ()."
       },
       {
         "instruction": "Taste the food and give your opinion.",
@@ -1501,30 +1116,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
     ],
     "steps": [
       {
-        "instruction": "Read the trail sign. What mountain is this?",
-        "question": "What does \"陶\" mean?",
-        "options": [
-          "component of 赔偿",
-          "component of 碳排放",
-          "component of 陶艺",
-          "to contact/connection"
-        ],
-        "correctIndex": 2,
-        "explanation": "陶 () means \"component of 陶艺\"."
-      },
-      {
-        "instruction": "Check the weather forecast. What does it say?",
-        "question": "Which character means \"component of 后悔\"?",
-        "options": [
-          "凉",
-          "端午节",
-          "悔",
-          "古迹"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 后悔\" is written as 悔 ()."
-      },
-      {
         "instruction": "Identify the trees along the path.",
         "question": "How do you pronounce \"外交\"?",
         "options": [
@@ -1542,7 +1133,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "to retire",
           "pure/simple",
-          "component of 风俗",
+          "passport",
           "to pardon"
         ],
         "correctIndex": 3,
@@ -1573,30 +1164,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "刻 is pronounced ."
       },
       {
-        "instruction": "Meet another hiker. Start a conversation.",
-        "question": "What does \"才\" mean?",
-        "options": [
-          "component of 天才",
-          "genius",
-          "tomorrow",
-          "healthy/health"
-        ],
-        "correctIndex": 0,
-        "explanation": "才 () means \"component of 天才\"."
-      },
-      {
-        "instruction": "Discuss environmental protection.",
-        "question": "Which character means \"component of 弹幕\"?",
-        "options": [
-          "Verb+着",
-          "百",
-          "体",
-          "幕"
-        ],
-        "correctIndex": 3,
-        "explanation": "\"component of 弹幕\" is written as 幕 ()."
-      },
-      {
         "instruction": "Read about an endangered species at the information board.",
         "question": "How do you pronounce \"心\"?",
         "options": [
@@ -1612,9 +1179,9 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Reach the summit! Express your feelings.",
         "question": "What does \"生活方式\" mean?",
         "options": [
-          "component of 值得",
+          "feast",
           "mutually/each other",
-          "component of 债务",
+          "precise",
           "lifestyle"
         ],
         "correctIndex": 3,
@@ -1639,7 +1206,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Read the wedding invitation. When is the wedding?",
         "question": "What does \"邻居\" mean?",
         "options": [
-          "component of 保险",
+          "volcano",
           "he/him",
           "neighbor",
           "pencil"
@@ -1678,7 +1245,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "childish/naive",
           "proof/certificate",
           "Negation of past action",
-          "component of 风俗"
+          "magazine"
         ],
         "correctIndex": 0,
         "explanation": "幼稚 (yòuzhì) means \"childish/naive\"."
@@ -1708,18 +1275,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "邀请函 is pronounced yāoqǐng hán."
       },
       {
-        "instruction": "Chat with other guests. Introduce yourself.",
-        "question": "What does \"漂\" mean?",
-        "options": [
-          "dialect",
-          "component of 漂亮",
-          "component of 民主",
-          "to sign (agreement)"
-        ],
-        "correctIndex": 1,
-        "explanation": "漂 () means \"component of 漂亮\"."
-      },
-      {
         "instruction": "Learn about the meaning of red at weddings.",
         "question": "Which character means \"unemployment\"?",
         "options": [
@@ -1742,18 +1297,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 1,
         "explanation": "智 is pronounced ."
-      },
-      {
-        "instruction": "Say goodbye and wish the couple well.",
-        "question": "What does \"饮\" mean?",
-        "options": [
-          "precise/accurate",
-          "component of 饮料",
-          "to assess/examine",
-          "component of 介绍"
-        ],
-        "correctIndex": 1,
-        "explanation": "饮 () means \"component of 饮料\"."
       }
     ]
   },
@@ -1775,9 +1318,9 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"合理\" mean?",
         "options": [
           "reasonable/rational",
-          "component of 营养",
-          "component of 原谅",
-          "component of 改革"
+          "kernel",
+          "plunge",
+          "joyful"
         ],
         "correctIndex": 0,
         "explanation": "合理 (hélǐ) means \"reasonable/rational\"."
@@ -1811,7 +1354,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"幸福感\" mean?",
         "options": [
           "sense of happiness",
-          "component of 逮捕",
+          "feast",
           "China's economic development passage",
           "condition/terms"
         ],
@@ -1846,7 +1389,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "The interviewer asks about your weaknesses. Respond diplomatically.",
         "question": "What does \"完善\" mean?",
         "options": [
-          "component of 渴望",
+          "wealthy",
           "to perfect/improve",
           "bike sharing",
           "drought"
@@ -1912,7 +1455,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "custom/tradition",
           "Besides/except for...",
           "day/sun",
-          "component of 绿色"
+          "war"
         ],
         "correctIndex": 0,
         "explanation": "风俗 (fēngsú) means \"custom/tradition\"."
@@ -1942,18 +1485,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "理性 is pronounced lǐxìng."
       },
       {
-        "instruction": "Learn about the Four Treasures of the Study.",
-        "question": "What does \"封\" mean?",
-        "options": [
-          "component of 职业",
-          "component of 信封",
-          "component of 故事",
-          "fire"
-        ],
-        "correctIndex": 1,
-        "explanation": "封 () means \"component of 信封\"."
-      },
-      {
         "instruction": "Read a famous Chinese poem.",
         "question": "Which character means \"to inherit/pass down\"?",
         "options": [
@@ -1978,18 +1509,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "已 is pronounced ."
       },
       {
-        "instruction": "Try writing a character with a brush. Describe the experience.",
-        "question": "What does \"改\" mean?",
-        "options": [
-          "component of 改革",
-          "Study methods passage",
-          "rough/violent",
-          "to guide/instruct"
-        ],
-        "correctIndex": 0,
-        "explanation": "改 () means \"component of 改革\"."
-      },
-      {
         "instruction": "Compare Chinese and Western art styles.",
         "question": "Which character means \"bike sharing\"?",
         "options": [
@@ -2012,18 +1531,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 3,
         "explanation": "灵活 is pronounced línghuó."
-      },
-      {
-        "instruction": "Buy an art print and ask about the artist.",
-        "question": "What does \"兵\" mean?",
-        "options": [
-          "component of 崇拜",
-          "component of 兵马俑",
-          "tone (of Chinese)",
-          "to practice/study"
-        ],
-        "correctIndex": 1,
-        "explanation": "兵 () means \"component of 兵马俑\"."
       }
     ]
   },
@@ -2046,7 +1553,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "audience/spectator",
           "joyful/happy",
-          "component of 粗暴",
+          "oxygen",
           "to chat"
         ],
         "correctIndex": 1,
@@ -2082,23 +1589,11 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "music class",
           "principle",
-          "component of 研究",
+          "monument",
           "monsoon"
         ],
         "correctIndex": 0,
         "explanation": "音乐课 (yīnyuèkè) means \"music class\"."
-      },
-      {
-        "instruction": "Create a slogan for the campaign.",
-        "question": "Which character means \"component of 洪水\"?",
-        "options": [
-          "待",
-          "缺乏",
-          "续",
-          "洪"
-        ],
-        "correctIndex": 3,
-        "explanation": "\"component of 洪水\" is written as 洪 ()."
       },
       {
         "instruction": "Present statistics about air quality.",
@@ -2125,18 +1620,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "功夫 (gōngfu) means \"kung fu/skill\"."
       },
       {
-        "instruction": "Learn about renewable energy in China.",
-        "question": "Which character means \"component of 京剧\"?",
-        "options": [
-          "生日",
-          "关系",
-          "剧",
-          "后悔"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 京剧\" is written as 剧 ()."
-      },
-      {
         "instruction": "Write a pledge to protect the environment.",
         "question": "How do you pronounce \"上传\"?",
         "options": [
@@ -2154,7 +1637,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "referee/judge",
           "government",
-          "component of 推陈出新",
+          "to regret",
           "to communicate"
         ],
         "correctIndex": 3,
@@ -2176,30 +1659,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
     ],
     "steps": [
       {
-        "instruction": "Read the performance program. What's showing tonight?",
-        "question": "What does \"柔\" mean?",
-        "options": [
-          "component of 签署",
-          "component of 无聊",
-          "poor/poverty",
-          "component of 温柔"
-        ],
-        "correctIndex": 3,
-        "explanation": "柔 () means \"component of 温柔\"."
-      },
-      {
-        "instruction": "Identify a traditional Chinese instrument.",
-        "question": "Which character means \"component of 铅笔\"?",
-        "options": [
-          "残忍",
-          "方言",
-          "铅",
-          "摄"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 铅笔\" is written as 铅 ()."
-      },
-      {
         "instruction": "The performer plays a famous piece. What is it about?",
         "question": "How do you pronounce \"老师\"?",
         "options": [
@@ -2210,18 +1669,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 0,
         "explanation": "老师 is pronounced lǎoshī."
-      },
-      {
-        "instruction": "Learn about the guzheng. What kind of instrument is it?",
-        "question": "What does \"厨\" mean?",
-        "options": [
-          "component of 厨房",
-          "component of 干旱",
-          "happy/to like",
-          "plan"
-        ],
-        "correctIndex": 0,
-        "explanation": "厨 () means \"component of 厨房\"."
       },
       {
         "instruction": "Watch a traditional dance. Describe the movements.",
@@ -2311,30 +1758,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
     ],
     "steps": [
       {
-        "instruction": "Research Xi'an. What is it famous for?",
-        "question": "What does \"往\" mean?",
-        "options": [
-          "to exceed/the more",
-          "component of 挑战",
-          "component of 遗产",
-          "component of 向往"
-        ],
-        "correctIndex": 3,
-        "explanation": "往 () means \"component of 向往\"."
-      },
-      {
-        "instruction": "Book a train ticket. How do you ask for one?",
-        "question": "Which character means \"component of 安排\"?",
-        "options": [
-          "法律",
-          "密",
-          "幸",
-          "排"
-        ],
-        "correctIndex": 3,
-        "explanation": "\"component of 安排\" is written as 排 ()."
-      },
-      {
         "instruction": "Find a hotel. Understand the room description.",
         "question": "How do you pronounce \"生日\"?",
         "options": [
@@ -2345,18 +1768,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 2,
         "explanation": "生日 is pronounced shēngrì."
-      },
-      {
-        "instruction": "Create a day-by-day itinerary.",
-        "question": "What does \"调\" mean?",
-        "options": [
-          "component of 空调",
-          "visa",
-          "pen/writing tool",
-          "to change/transform"
-        ],
-        "correctIndex": 0,
-        "explanation": "调 () means \"component of 空调\"."
       },
       {
         "instruction": "Arrive in Xi'an. Ask for directions to the hotel.",
@@ -2381,30 +1792,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 2,
         "explanation": "场 is pronounced ."
-      },
-      {
-        "instruction": "Read the information about the warriors.",
-        "question": "What does \"养\" mean?",
-        "options": [
-          "component of 营养",
-          "bad/broken",
-          "to go",
-          "name"
-        ],
-        "correctIndex": 0,
-        "explanation": "养 () means \"component of 营养\"."
-      },
-      {
-        "instruction": "Try local Xi'an food. What is 肉夹馍?",
-        "question": "Which character means \"component of 魅力\"?",
-        "options": [
-          "启发",
-          "养老问题",
-          "魅",
-          "文化"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 魅力\" is written as 魅 ()."
       },
       {
         "instruction": "Visit the city wall. Describe the view.",
@@ -2524,7 +1911,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "email",
           "custom/tradition",
           "rain",
-          "component of 岛屿"
+          "brilliant"
         ],
         "correctIndex": 2,
         "explanation": "雨 (yǔ) means \"rain\"."
@@ -2552,18 +1939,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 1,
         "explanation": "地址 is pronounced dìzhǐ."
-      },
-      {
-        "instruction": "Thank your host and express appreciation.",
-        "question": "What does \"李\" mean?",
-        "options": [
-          "component of 快递",
-          "component of 语言",
-          "class/shift",
-          "component of 行李"
-        ],
-        "correctIndex": 3,
-        "explanation": "李 () means \"component of 行李\"."
       }
     ]
   },
@@ -2584,25 +1959,13 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Learn about 春节 (Spring Festival). When is it?",
         "question": "What does \"题\" mean?",
         "options": [
-          "component of 夏天",
-          "component of 其实",
+          "elegant",
+          "brilliant",
           "justice",
           "topic/question"
         ],
         "correctIndex": 3,
         "explanation": "题 (tí) means \"topic/question\"."
-      },
-      {
-        "instruction": "What traditions are associated with Mid-Autumn Festival?",
-        "question": "Which character means \"component of 原谅\"?",
-        "options": [
-          "新陈代谢",
-          "显",
-          "远程工作",
-          "谅"
-        ],
-        "correctIndex": 3,
-        "explanation": "\"component of 原谅\" is written as 谅 ()."
       },
       {
         "instruction": "Learn about Dragon Boat Festival and its food.",
@@ -2622,7 +1985,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "to compare",
           "mind/breadth of vision",
-          "component of 纪念品",
+          "to trust",
           "bedroom"
         ],
         "correctIndex": 1,
@@ -2692,7 +2055,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Plan how to celebrate a Chinese festival.",
         "question": "What does \"努力\" mean?",
         "options": [
-          "component of 温柔",
+          "to vote",
           "host/presenter",
           "silver/money",
           "to work hard/effort"
@@ -2716,30 +2079,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
     ],
     "steps": [
       {
-        "instruction": "Learn about mobile payment. What is 微信支付?",
-        "question": "What does \"痛\" mean?",
-        "options": [
-          "spirit/clever",
-          "food safety",
-          "social media",
-          "component of 头痛"
-        ],
-        "correctIndex": 3,
-        "explanation": "痛 () means \"component of 头痛\"."
-      },
-      {
-        "instruction": "Download a food delivery app. Order lunch.",
-        "question": "Which character means \"component of 义务\"?",
-        "options": [
-          "百",
-          "贵",
-          "义",
-          "狭"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 义务\" is written as 义 ()."
-      },
-      {
         "instruction": "Use a navigation app. Find your destination.",
         "question": "How do you pronounce \"Statement+吗?\"?",
         "options": [
@@ -2750,30 +2089,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 0,
         "explanation": "Statement+吗? is pronounced statement + ma?."
-      },
-      {
-        "instruction": "Learn about bike-sharing. How does it work?",
-        "question": "What does \"铜\" mean?",
-        "options": [
-          "to jog/run",
-          "luck/transport",
-          "collective/group",
-          "component of 铜牌"
-        ],
-        "correctIndex": 3,
-        "explanation": "铜 () means \"component of 铜牌\"."
-      },
-      {
-        "instruction": "Discuss the differences in social media platforms.",
-        "question": "Which character means \"component of 共享单车\"?",
-        "options": [
-          "丰富",
-          "英语",
-          "享",
-          "履"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 共享单车\" is written as 享 ()."
       },
       {
         "instruction": "Learn about online shopping in China.",
@@ -2792,7 +2107,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"反驳\" mean?",
         "options": [
           "social media",
-          "component of 缓慢",
+          "to compensate",
           "Chinese cuisine passage",
           "to refute"
         ],
@@ -2822,18 +2137,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 2,
         "explanation": "拜 is pronounced ."
-      },
-      {
-        "instruction": "Reflect on technology's role in learning Chinese.",
-        "question": "What does \"消\" mean?",
-        "options": [
-          "component of 紫色",
-          "to practice/exercise",
-          "kitchen",
-          "component of 消费"
-        ],
-        "correctIndex": 3,
-        "explanation": "消 () means \"component of 消费\"."
       }
     ]
   },
@@ -2863,18 +2166,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "雪 (xuě) means \"snow\"."
       },
       {
-        "instruction": "Identify key vocabulary in the first paragraph.",
-        "question": "Which character means \"component of 留恋\"?",
-        "options": [
-          "论",
-          "丰",
-          "星期",
-          "恋"
-        ],
-        "correctIndex": 3,
-        "explanation": "\"component of 留恋\" is written as 恋 ()."
-      },
-      {
         "instruction": "Understand the main argument of the article.",
         "question": "How do you pronounce \"特征\"?",
         "options": [
@@ -2890,25 +2181,13 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Find supporting details.",
         "question": "What does \"复印\" mean?",
         "options": [
-          "component of 拘留",
+          "ambitious",
           "to close/concern",
           "to photocopy",
           "clear/understood"
         ],
         "correctIndex": 2,
         "explanation": "复印 (fùyìn) means \"to photocopy\"."
-      },
-      {
-        "instruction": "Learn news-related vocabulary.",
-        "question": "Which character means \"component of 逮捕\"?",
-        "options": [
-          "惠",
-          "专",
-          "逮",
-          "企"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 逮捕\" is written as 逮 ()."
       },
       {
         "instruction": "Summarize the article in your own words.",
@@ -2957,18 +2236,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 0,
         "explanation": "珍 is pronounced ."
-      },
-      {
-        "instruction": "Compare news coverage in different languages.",
-        "question": "What does \"炼\" mean?",
-        "options": [
-          "quiet/still",
-          "component of 骄傲",
-          "component of 锻炼",
-          "spicy/hot"
-        ],
-        "correctIndex": 2,
-        "explanation": "炼 () means \"component of 锻炼\"."
       }
     ]
   },
@@ -2985,18 +2252,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
       "c_505a"
     ],
     "steps": [
-      {
-        "instruction": "Learn the twelve zodiac animals in Chinese.",
-        "question": "What does \"射\" mean?",
-        "options": [
-          "component of 辐射",
-          "extroverted/outgoing",
-          "painting/drawing",
-          "Writing: write a short story"
-        ],
-        "correctIndex": 0,
-        "explanation": "射 () means \"component of 辐射\"."
-      },
       {
         "instruction": "Find out your zodiac animal. What year were you born?",
         "question": "Which character means \"Writing: write a short story\"?",
@@ -3025,8 +2280,8 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Learn personality traits associated with your zodiac.",
         "question": "What does \"害\" mean?",
         "options": [
-          "component of 事半功倍",
-          "component of 缓慢",
+          "ceremony",
+          "warranty",
           "harm/damage",
           "newspaper"
         ],
@@ -3058,18 +2313,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "宿 is pronounced ."
       },
       {
-        "instruction": "Discuss how zodiac beliefs influence culture.",
-        "question": "What does \"循\" mean?",
-        "options": [
-          "situation/condition",
-          "component of 循序渐进",
-          "virtual/fictitious",
-          "method/way"
-        ],
-        "correctIndex": 1,
-        "explanation": "循 () means \"component of 循序渐进\"."
-      },
-      {
         "instruction": "Compare Chinese zodiac with Western astrology.",
         "question": "Which character means \"actually/in fact\"?",
         "options": [
@@ -3092,18 +2335,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 0,
         "explanation": "率 is pronounced ."
-      },
-      {
-        "instruction": "Share your zodiac with a Chinese friend.",
-        "question": "What does \"友\" mean?",
-        "options": [
-          "Chinese character",
-          "component of 朋友",
-          "police officer",
-          "kung fu/skill"
-        ],
-        "correctIndex": 1,
-        "explanation": "友 () means \"component of 朋友\"."
       }
     ]
   },
@@ -3198,8 +2429,8 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "to bend/curved",
           "to believe",
-          "component of 二维码",
-          "component of 改革"
+          "obscure",
+          "envelope"
         ],
         "correctIndex": 1,
         "explanation": "相信 (xiāngxìn) means \"to believe\"."
@@ -3232,9 +2463,9 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Create a healthy lifestyle plan in Chinese.",
         "question": "What does \"救灾\" mean?",
         "options": [
-          "component of 烹饪",
+          "mild",
           "to raise/improve",
-          "component of 阻碍",
+          "courage",
           "disaster relief"
         ],
         "correctIndex": 3,
@@ -3268,18 +2499,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "Adj+一点儿 (adj + yīdiǎnr) means \"A little bit + adj\"."
       },
       {
-        "instruction": "Call a real estate agent. Ask about availability.",
-        "question": "Which character means \"component of 研究\"?",
-        "options": [
-          "伪",
-          "研",
-          "花园",
-          "律"
-        ],
-        "correctIndex": 1,
-        "explanation": "\"component of 研究\" is written as 研 ()."
-      },
-      {
         "instruction": "Visit an apartment. Describe the rooms.",
         "question": "How do you pronounce \"泰山\"?",
         "options": [
@@ -3295,25 +2514,13 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Ask about the monthly rent.",
         "question": "What does \"头痛\" mean?",
         "options": [
-          "component of 端午节",
+          "ceremony",
           "headache",
           "poor/poverty",
           "laboratory"
         ],
         "correctIndex": 1,
         "explanation": "头痛 (tóutòng) means \"headache\"."
-      },
-      {
-        "instruction": "Discuss the lease terms.",
-        "question": "Which character means \"component of 污染\"?",
-        "options": [
-          "约",
-          "压岁钱",
-          "污",
-          "铁"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 污染\" is written as 污 ()."
       },
       {
         "instruction": "Ask about utilities. What's included?",
@@ -3362,18 +2569,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 3,
         "explanation": "国际关系 is pronounced guójì guānxì."
-      },
-      {
-        "instruction": "Meet your new neighbors. Introduce yourself.",
-        "question": "What does \"奉\" mean?",
-        "options": [
-          "world",
-          "component of 奉献",
-          "boundary/world",
-          "to carry/bring"
-        ],
-        "correctIndex": 1,
-        "explanation": "奉 () means \"component of 奉献\"."
       }
     ]
   },
@@ -3395,7 +2590,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"创造力\" mean?",
         "options": [
           "World Trade Organization",
-          "component of 筷子",
+          "war",
           "creativity",
           "worried/anxious"
         ],
@@ -3431,7 +2626,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"虚伪\" mean?",
         "options": [
           "artificial intelligence",
-          "component of 急躁",
+          "satellite",
           "hypocritical/false",
           "Very + adjective"
         ],
@@ -3467,7 +2662,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"其实\" mean?",
         "options": [
           "actually/in fact",
-          "component of 亡羊补牢",
+          "cross-talk comedy",
           "face",
           "Transportation passage"
         ],
@@ -3497,18 +2692,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 3,
         "explanation": "着急 is pronounced zháojí."
-      },
-      {
-        "instruction": "Summarize the key takeaways from the discussion.",
-        "question": "What does \"谐\" mean?",
-        "options": [
-          "component of 宾馆",
-          "component of 和谐",
-          "to read aloud",
-          "component of 晴天"
-        ],
-        "correctIndex": 1,
-        "explanation": "谐 () means \"component of 和谐\"."
       }
     ]
   },
@@ -3538,18 +2721,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "意 (yì) means \"meaning/idea\"."
       },
       {
-        "instruction": "Learn about the calligraphy tools. What is a 毛笔?",
-        "question": "Which character means \"component of 硕士\"?",
-        "options": [
-          "士",
-          "太极",
-          "全球变暖",
-          "务"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 硕士\" is written as 士 ()."
-      },
-      {
         "instruction": "Practice basic strokes. What are the main types?",
         "question": "How do you pronounce \"环保倡议书\"?",
         "options": [
@@ -3560,30 +2731,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 3,
         "explanation": "环保倡议书 is pronounced huánbǎo chàngyì shū."
-      },
-      {
-        "instruction": "Write the character 人. How many strokes?",
-        "question": "What does \"取\" mean?",
-        "options": [
-          "system/unite",
-          "component of 录取",
-          "component of 微波炉",
-          "component of 宗教"
-        ],
-        "correctIndex": 1,
-        "explanation": "取 () means \"component of 录取\"."
-      },
-      {
-        "instruction": "Learn about different calligraphy styles.",
-        "question": "Which character means \"component of 促进\"?",
-        "options": [
-          "促",
-          "视",
-          "水",
-          "原谅"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 促进\" is written as 促 ()."
       },
       {
         "instruction": "Practice writing your name in Chinese.",
@@ -3604,22 +2751,10 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "structure/construct",
           "to study diligently",
           "economic recession",
-          "component of 优惠"
+          "fragile"
         ],
         "correctIndex": 2,
         "explanation": "经济衰退 (jīngjì shuāituì) means \"economic recession\"."
-      },
-      {
-        "instruction": "Learn about the philosophical connection to calligraphy.",
-        "question": "Which character means \"component of 地铁\"?",
-        "options": [
-          "康",
-          "铁",
-          "百",
-          "杯"
-        ],
-        "correctIndex": 1,
-        "explanation": "\"component of 地铁\" is written as 铁 ()."
       },
       {
         "instruction": "Write a short phrase or proverb.",
@@ -3637,8 +2772,8 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Display your best work and describe it.",
         "question": "What does \"被+Agent+Verb\" mean?",
         "options": [
-          "component of 博物馆",
-          "component of 面包",
+          "mirror",
+          "planet",
           "Passive voice",
           "Tradition and modernity passage"
         ],
@@ -3664,10 +2799,10 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Read the sports day schedule. What events are there?",
         "question": "What does \"健康\" mean?",
         "options": [
-          "component of 裁判",
+          "color",
           "Forbidden City",
           "healthy/health",
-          "component of 珍惜"
+          "calendar"
         ],
         "correctIndex": 2,
         "explanation": "健康 (jiànkāng) means \"healthy/health\"."
@@ -3700,25 +2835,13 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Cheer for your team. What do you shout?",
         "question": "What does \"火车\" mean?",
         "options": [
-          "component of 英雄",
+          "intelligent/clever",
           "fair/just",
           "train",
           "journey/process"
         ],
         "correctIndex": 2,
         "explanation": "火车 (huǒchē) means \"train\"."
-      },
-      {
-        "instruction": "The score is announced. Understand the numbers.",
-        "question": "Which character means \"component of 自行车\"?",
-        "options": [
-          "自",
-          "发达国家",
-          "演",
-          "钓鱼"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 自行车\" is written as 自 ()."
       },
       {
         "instruction": "Discuss good sportsmanship.",
@@ -3738,7 +2861,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "to practice/exercise",
           "comprehensive",
-          "component of 丈夫",
+          "gravity",
           "silver/money"
         ],
         "correctIndex": 3,
@@ -3767,18 +2890,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 2,
         "explanation": "导游 is pronounced dǎoyóu."
-      },
-      {
-        "instruction": "Write about the sports day experience.",
-        "question": "What does \"探\" mean?",
-        "options": [
-          "component of 探索",
-          "bright/light",
-          "yin and yang",
-          "to accelerate"
-        ],
-        "correctIndex": 0,
-        "explanation": "探 () means \"component of 探索\"."
       }
     ]
   },
@@ -3800,7 +2911,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"活到老学到老\" mean?",
         "options": [
           "to exchange/communicate",
-          "component of 否认",
+          "sincere",
           "hat/cap",
           "live and learn / never stop learning"
         ],
@@ -3836,7 +2947,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"咸\" mean?",
         "options": [
           "sufficient/full",
-          "component of 尊重",
+          "humble",
           "salty",
           "to practice"
         ],
@@ -3872,9 +2983,9 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"南\" mean?",
         "options": [
           "to issue/distribute",
-          "component of 渴望",
+          "color",
           "south",
-          "component of 蛋糕"
+          "dinosaur"
         ],
         "correctIndex": 2,
         "explanation": "南 (nán) means \"south\"."
@@ -3909,7 +3020,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "review the old to learn the new",
           "expert/specialist",
-          "component of 宿舍",
+          "to pick up",
           "doctor"
         ],
         "correctIndex": 0,
@@ -3972,7 +3083,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "department",
           "at the same time",
-          "component of 寒带",
+          "to criticize",
           "dinner"
         ],
         "correctIndex": 0,
@@ -4037,18 +3148,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 3,
         "explanation": "帮 is pronounced bāng."
-      },
-      {
-        "instruction": "Plan to volunteer again. Express your commitment.",
-        "question": "What does \"饺\" mean?",
-        "options": [
-          "child",
-          "sunny day",
-          "impression",
-          "component of 饺子"
-        ],
-        "correctIndex": 3,
-        "explanation": "饺 () means \"component of 饺子\"."
       }
     ]
   },
@@ -4065,19 +3164,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
       "w_522b51774e00683c"
     ],
     "steps": [
-      {
-        "instruction": "The host greets you. How do you respond?",
-        "question": "What does \"乏\" mean?",
-        "options": [
-          "humorous/funny",
-          "component of 缺乏",
-          "driver's license",
-          "often/frequently"
-        ],
-        "correctIndex": 1,
-        "explanation": "乏 () means \"component of 缺乏\".",
-        "hint": "Think about basic greetings"
-      },
       {
         "instruction": "The waiter asks how many people. What's the measure word for people?",
         "question": "Which character means \"Both...and...\"?",
@@ -4143,9 +3229,9 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"使命感\" mean?",
         "options": [
           "stable/steady",
-          "component of 猛烈",
+          "whisper",
           "sense of mission",
-          "component of 二维码"
+          "biography"
         ],
         "correctIndex": 2,
         "explanation": "使命感 (shǐmìnggǎn) means \"sense of mission\"."
@@ -4179,9 +3265,9 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"银行\" mean?",
         "options": [
           "safe/safety",
-          "component of 咖啡",
+          "dragon",
           "bank",
-          "component of 垄断"
+          "Mount Tai"
         ],
         "correctIndex": 2,
         "explanation": "银行 (yínháng) means \"bank\"."
@@ -4205,7 +3291,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "The teacher asks your name. Introduce yourself.",
         "question": "What does \"大\" mean?",
         "options": [
-          "component of 适当",
+          "brilliant",
           "big/large",
           "actually/in fact",
           "to decrease/reduce"
@@ -4241,8 +3327,8 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "A classmate asks what you like to do. Answer them.",
         "question": "What does \"自动化\" mean?",
         "options": [
-          "component of 寒带",
-          "component of 诗歌",
+          "Assignment/duty",
+          "patient",
           "automation",
           "culture"
         ],
@@ -4274,30 +3360,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "弹幕 is pronounced dànmù."
       },
       {
-        "instruction": "Your new friend invites you to lunch. Respond appropriately.",
-        "question": "What does \"访\" mean?",
-        "options": [
-          "component of 元宵节",
-          "to swipe a card",
-          "component of 采访",
-          "taxi"
-        ],
-        "correctIndex": 2,
-        "explanation": "访 () means \"component of 采访\"."
-      },
-      {
-        "instruction": "At lunch, discuss your favorite food.",
-        "question": "Which character means \"component of 尊重\"?",
-        "options": [
-          "尊",
-          "子",
-          "踏",
-          "艺"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 尊重\" is written as 尊 ()."
-      },
-      {
         "instruction": "Exchange phone numbers with your new friend.",
         "question": "How do you pronounce \"贵\"?",
         "options": [
@@ -4314,7 +3376,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"航空\" mean?",
         "options": [
           "pollution",
-          "component of 违约",
+          "genuine",
           "aviation",
           "must/certainly"
         ],
@@ -4340,10 +3402,10 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Start the letter with a proper greeting.",
         "question": "What does \"需\" mean?",
         "options": [
-          "component of 旁边",
+          "sugar",
           "objective",
           "to need/require",
-          "component of 句子"
+          "to trust"
         ],
         "correctIndex": 2,
         "explanation": "需 (xū) means \"to need/require\"."
@@ -4376,10 +3438,10 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Talk about what you study at school.",
         "question": "What does \"高兴\" mean?",
         "options": [
-          "component of 帽子",
+          "kingdom",
           "happy/glad",
-          "component of 蛋糕",
-          "component of 太极拳"
+          "Mount Tai",
+          "neat/even"
         ],
         "correctIndex": 1,
         "explanation": "高兴 (gāoxìng) means \"happy/glad\"."
@@ -4414,23 +3476,11 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "package/parcel",
           "responsible",
-          "component of 利益",
+          "to contact/connection",
           "My family passage"
         ],
         "correctIndex": 3,
         "explanation": "我的家 (wǒ de jiā) means \"My family passage\"."
-      },
-      {
-        "instruction": "Ask about the weather in their city.",
-        "question": "Which character means \"component of 下棋\"?",
-        "options": [
-          "通勤",
-          "二氧化碳",
-          "棋",
-          "安全感"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 下棋\" is written as 棋 ()."
       },
       {
         "instruction": "Ask what food they recommend.",
@@ -4448,7 +3498,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Close the letter politely.",
         "question": "What does \"Verb+了\" mean?",
         "options": [
-          "component of 分裂",
+          "fragile",
           "Completed action",
           "please/to invite",
           "to face/confront"
@@ -4475,25 +3525,13 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "A vendor calls out. What are they selling?",
         "question": "What does \"随遇而安\" mean?",
         "options": [
-          "component of 逮捕",
+          "paper",
           "to believe",
           "be content with one's lot",
           "talent cultivation"
         ],
         "correctIndex": 2,
         "explanation": "随遇而安 (suí yù ér ān) means \"be content with one's lot\"."
-      },
-      {
-        "instruction": "Ask how much something costs.",
-        "question": "Which character means \"component of 广泛\"?",
-        "options": [
-          "光速",
-          "泛",
-          "繁",
-          "任"
-        ],
-        "correctIndex": 1,
-        "explanation": "\"component of 广泛\" is written as 泛 ()."
       },
       {
         "instruction": "The vendor says a price. Understand the number.",
@@ -4578,18 +3616,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 2,
         "explanation": "看医生 is pronounced kàn yīshēng."
-      },
-      {
-        "instruction": "Thank the vendor and say goodbye.",
-        "question": "What does \"默\" mean?",
-        "options": [
-          "component of 幽默",
-          "museum",
-          "component of 平衡",
-          "component of 挑战"
-        ],
-        "correctIndex": 0,
-        "explanation": "默 () means \"component of 幽默\"."
       }
     ]
   },
@@ -4619,18 +3645,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "丝绸之路 (sīchóu zhī lù) means \"Silk Road passage\"."
       },
       {
-        "instruction": "Tell the receptionist you need to see a doctor.",
-        "question": "Which character means \"component of 背包\"?",
-        "options": [
-          "背",
-          "迅",
-          "布",
-          "敬"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 背包\" is written as 背 ()."
-      },
-      {
         "instruction": "The doctor asks what's wrong. Describe your symptom.",
         "question": "How do you pronounce \"核能\"?",
         "options": [
@@ -4646,9 +3660,9 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "How long have you been sick? Express duration.",
         "question": "What does \"粗暴\" mean?",
         "options": [
-          "component of 时候",
+          "deep/profound",
           "rough/violent",
-          "component of 压岁钱",
+          "carbon emissions",
           "today/now"
         ],
         "correctIndex": 1,
@@ -4679,30 +3693,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "歉 is pronounced ."
       },
       {
-        "instruction": "Ask how many times a day to take the medicine.",
-        "question": "What does \"逮\" mean?",
-        "options": [
-          "racial discrimination",
-          "component of 逮捕",
-          "to hinder/obstruct",
-          "My dream passage"
-        ],
-        "correctIndex": 1,
-        "explanation": "逮 () means \"component of 逮捕\"."
-      },
-      {
-        "instruction": "The doctor advises rest. Understand the advice.",
-        "question": "Which character means \"component of 社交媒体\"?",
-        "options": [
-          "媒",
-          "大学",
-          "意",
-          "豁达"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 社交媒体\" is written as 媒 ()."
-      },
-      {
         "instruction": "Ask when you'll feel better.",
         "question": "How do you pronounce \"堂\"?",
         "options": [
@@ -4718,8 +3708,8 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Thank the doctor.",
         "question": "What does \"发明\" mean?",
         "options": [
-          "component of 梦想",
-          "component of 婴儿",
+          "carbon emissions",
+          "fountain",
           "angry",
           "to invent/invention"
         ],
@@ -4747,7 +3737,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "glacier",
           "to close/concern",
-          "component of 牺牲",
+          "marble",
           "Only if...then..."
         ],
         "correctIndex": 0,
@@ -4784,22 +3774,10 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "male/man",
           "flustered/panic",
           "music class",
-          "component of 词语"
+          "to analyze"
         ],
         "correctIndex": 1,
         "explanation": "慌 (huāng) means \"flustered/panic\"."
-      },
-      {
-        "instruction": "The announcement says the next stop. Listen and understand.",
-        "question": "Which character means \"component of 录取\"?",
-        "options": [
-          "辞",
-          "宽",
-          "取",
-          "她"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 录取\" is written as 取 ()."
       },
       {
         "instruction": "Ask a fellow passenger for help.",
@@ -4817,7 +3795,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Transfer to another line. Follow the signs.",
         "question": "What does \"反对\" mean?",
         "options": [
-          "component of 赞美",
+          "elegant",
           "stairs/staircase",
           "All / both",
           "to oppose"
@@ -4848,18 +3826,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 0,
         "explanation": "烹 is pronounced ."
-      },
-      {
-        "instruction": "Ask for directions to your final destination.",
-        "question": "What does \"烹\" mean?",
-        "options": [
-          "to expect/look forward to",
-          "component of 烹饪",
-          "component of 魅力",
-          "drought"
-        ],
-        "correctIndex": 1,
-        "explanation": "烹 () means \"component of 烹饪\"."
       }
     ]
   },
@@ -4880,9 +3846,9 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Your host says 新年好! What does this mean?",
         "question": "What does \"骗\" mean?",
         "options": [
-          "component of 广播",
+          "harbor",
           "to deceive/cheat",
-          "component of 兴奋",
+          "narrow",
           "historic site"
         ],
         "correctIndex": 1,
@@ -4916,7 +3882,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "The family gathers for dinner. Who is at the table?",
         "question": "What does \"织\" mean?",
         "options": [
-          "component of 颁奖",
+          "shadow",
           "to carry/worry",
           "to weave/organize",
           "badminton"
@@ -4952,7 +3918,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Talk about your New Year's resolutions.",
         "question": "What does \"哥哥\" mean?",
         "options": [
-          "component of 乒乓球",
+          "algebra",
           "to repair/study",
           "curiosity",
           "older brother"
@@ -5015,10 +3981,10 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Create your profile. Fill in your name.",
         "question": "What does \"世界\" mean?",
         "options": [
-          "component of 牛肉",
+          "topic/question",
           "to practice",
           "world",
-          "component of 硕士"
+          "Go (board game)"
         ],
         "correctIndex": 2,
         "explanation": "世界 (shìjiè) means \"world\"."
@@ -5046,18 +4012,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 0,
         "explanation": "亡羊补牢 is pronounced wáng yáng bǔ láo."
-      },
-      {
-        "instruction": "They ask where you're from. Respond.",
-        "question": "What does \"尼\" mean?",
-        "options": [
-          "component of 信封",
-          "to practice/exercise",
-          "younger brother",
-          "component of 基尼系数"
-        ],
-        "correctIndex": 3,
-        "explanation": "尼 () means \"component of 基尼系数\"."
       },
       {
         "instruction": "Share your interests.",
@@ -5151,7 +4105,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"故宫\" mean?",
         "options": [
           "smelly/stinky",
-          "component of 牙痛",
+          "feast",
           "Forbidden City",
           "school"
         ],
@@ -5189,7 +4143,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "to decelerate",
           "to admit/recognize",
           "difference/distinction",
-          "component of 诚恳"
+          "bitter"
         ],
         "correctIndex": 2,
         "explanation": "区别 (qūbié) means \"difference/distinction\"."
@@ -5223,7 +4177,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"社会实践\" mean?",
         "options": [
           "social practice",
-          "component of 段落",
+          "neat/even",
           "Silk Road",
           "warm"
         ],
@@ -5260,7 +4214,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "to resign",
           "leadership",
-          "component of 日新月异",
+          "treasure",
           "to cherish/treasure"
         ],
         "correctIndex": 1,
@@ -5288,7 +4242,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "bowl",
           "to inherit",
           "to unite/connect",
-          "component of 彼此"
+          "generous"
         ],
         "correctIndex": 2,
         "explanation": "联 (lián) means \"to unite/connect\"."
@@ -5321,9 +4275,9 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Answer a detail question.",
         "question": "What does \"这\" mean?",
         "options": [
-          "component of 垃圾分类",
+          "Assignment/duty",
           "advanced",
-          "component of 原谅",
+          "excited",
           "this"
         ],
         "correctIndex": 3,
@@ -5358,7 +4312,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"勤奋\" mean?",
         "options": [
           "For someone do",
-          "component of 保险",
+          "elegant",
           "frigid zone",
           "diligent/hardworking"
         ],
@@ -5394,7 +4348,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"保\" mean?",
         "options": [
           "to protect/keep",
-          "component of 针灸",
+          "door/gate",
           "e-commerce",
           "to read aloud"
         ],
@@ -5416,18 +4370,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
       "w_51b35b9a"
     ],
     "steps": [
-      {
-        "instruction": "Read the recipe title. What dish are you making?",
-        "question": "What does \"单\" mean?",
-        "options": [
-          "luggage/baggage",
-          "component of 菜单",
-          "to refute",
-          "physical education"
-        ],
-        "correctIndex": 1,
-        "explanation": "单 () means \"component of 菜单\"."
-      },
       {
         "instruction": "Identify the ingredients. What does 鸡蛋 mean?",
         "question": "Which character means \"juice\"?",
@@ -5456,25 +4398,13 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "The recipe says to wash the vegetables. What verb is used?",
         "question": "What does \"直播\" mean?",
         "options": [
-          "component of 丝绸之路",
-          "component of 邻居",
+          "algebra",
+          "ceremony",
           "artificial intelligence",
           "live streaming"
         ],
         "correctIndex": 3,
         "explanation": "直播 (zhíbō) means \"live streaming\"."
-      },
-      {
-        "instruction": "Cut the ingredients. What does 切 mean?",
-        "question": "Which character means \"component of 留恋\"?",
-        "options": [
-          "证据",
-          "愿望",
-          "文化",
-          "恋"
-        ],
-        "correctIndex": 3,
-        "explanation": "\"component of 留恋\" is written as 恋 ()."
       },
       {
         "instruction": "Heat the oil. Understand the cooking instruction.",
@@ -5494,23 +4424,11 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "healthy/health",
           "to register",
-          "component of 猪肉",
+          "to dare",
           "coach/trainer"
         ],
         "correctIndex": 3,
         "explanation": "教练 (jiàoliàn) means \"coach/trainer\"."
-      },
-      {
-        "instruction": "Stir-fry the dish. How long should you cook it?",
-        "question": "Which character means \"component of 与时俱进\"?",
-        "options": [
-          "俱",
-          "脸",
-          "你好",
-          "逃"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 与时俱进\" is written as 俱 ()."
       },
       {
         "instruction": "Taste the food and give your opinion.",
@@ -5528,7 +4446,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "The dish is ready! Compliment the cook.",
         "question": "What does \"快\" mean?",
         "options": [
-          "component of 突然",
+          "clean/pure",
           "to reduce/lower",
           "To have / there is",
           "fast/quick/happy"
@@ -5558,7 +4476,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "to reserve/book",
           "zoo",
           "If...then...",
-          "component of 时候"
+          "temperament/aura"
         ],
         "correctIndex": 0,
         "explanation": "预订 (yùdìng) means \"to reserve/book\"."
@@ -5593,7 +4511,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "to protect/guard",
           "to move/carry",
-          "component of 牺牲",
+          "bitter",
           "skill/technology"
         ],
         "correctIndex": 0,
@@ -5636,18 +4554,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "电子商务 (diànzǐ shāngwù) means \"e-commerce\"."
       },
       {
-        "instruction": "Discuss environmental protection.",
-        "question": "Which character means \"component of 显著\"?",
-        "options": [
-          "压",
-          "敢",
-          "社会",
-          "显"
-        ],
-        "correctIndex": 3,
-        "explanation": "\"component of 显著\" is written as 显 ()."
-      },
-      {
         "instruction": "Read about an endangered species at the information board.",
         "question": "How do you pronounce \"骗\"?",
         "options": [
@@ -5663,8 +4569,8 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Reach the summit! Express your feelings.",
         "question": "What does \"古迹\" mean?",
         "options": [
-          "component of 终于",
-          "component of 矛盾",
+          "blaze",
+          "to compensate",
           "beef",
           "historic site"
         ],
@@ -5693,7 +4599,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "washing machine",
           "new",
           "bronze medal",
-          "component of 四大发明"
+          "pyramid"
         ],
         "correctIndex": 0,
         "explanation": "洗衣机 (xǐyījī) means \"washing machine\"."
@@ -5729,7 +4635,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "middle school",
           "evidence/proof",
           "wallet/purse",
-          "component of 贷款"
+          "monsoon"
         ],
         "correctIndex": 1,
         "explanation": "证据 (zhèngjù) means \"evidence/proof\"."
@@ -5764,23 +4670,11 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "reality",
           "forever/always",
-          "component of 骄傲",
+          "republic",
           "pregnant woman"
         ],
         "correctIndex": 0,
         "explanation": "现实 (xiànshí) means \"reality\"."
-      },
-      {
-        "instruction": "Learn about the meaning of red at weddings.",
-        "question": "Which character means \"component of 其实\"?",
-        "options": [
-          "文化",
-          "医生",
-          "实",
-          "驾"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 其实\" is written as 实 ()."
       },
       {
         "instruction": "Watch a performance. Describe it.",
@@ -5798,8 +4692,8 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Say goodbye and wish the couple well.",
         "question": "What does \"表达\" mean?",
         "options": [
-          "component of 荒谬",
-          "component of 其实",
+          "fountain",
+          "north",
           "to express",
           "passport"
         ],
@@ -5828,7 +4722,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "pretty/beautiful",
           "military",
           "to hope/long for",
-          "component of 发烧"
+          "landscape"
         ],
         "correctIndex": 1,
         "explanation": "军事 (jūnshì) means \"military\"."
@@ -5862,24 +4756,12 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"骗\" mean?",
         "options": [
           "to deceive/cheat",
-          "component of 幼稚",
+          "to create/initiate",
           "home/family",
           "smartphone"
         ],
         "correctIndex": 0,
         "explanation": "骗 (piàn) means \"to deceive/cheat\"."
-      },
-      {
-        "instruction": "Describe your skills and strengths.",
-        "question": "Which character means \"component of 广泛\"?",
-        "options": [
-          "泛",
-          "救灾",
-          "幼儿园",
-          "悲观"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 广泛\" is written as 泛 ()."
       },
       {
         "instruction": "Explain why you want this job.",
@@ -5900,22 +4782,10 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "sharing economy",
           "to approve/agree",
           "radical (of character)",
-          "component of 赔偿"
+          "thick"
         ],
         "correctIndex": 2,
         "explanation": "偏旁 (piānpáng) means \"radical (of character)\"."
-      },
-      {
-        "instruction": "Ask about the work schedule.",
-        "question": "Which character means \"component of 捐款\"?",
-        "options": [
-          "捐",
-          "站",
-          "月饼",
-          "喝"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 捐款\" is written as 捐 ()."
       },
       {
         "instruction": "Discuss salary expectations.",
@@ -5935,7 +4805,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "Art appreciation passage",
           "air conditioning",
-          "component of 时候",
+          "genuine",
           "common/together"
         ],
         "correctIndex": 1,
@@ -5999,7 +4869,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "point/o'clock",
           "glacier",
           "impression",
-          "component of 刚好"
+          "vegetable"
         ],
         "correctIndex": 2,
         "explanation": "印象 (yìnxiàng) means \"impression\"."
@@ -6034,7 +4904,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "to let/allow",
           "to construct/build",
-          "component of 蓝色",
+          "republic",
           "to pay attention/follow"
         ],
         "correctIndex": 1,
@@ -6068,7 +4938,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Buy an art print and ask about the artist.",
         "question": "What does \"任\" mean?",
         "options": [
-          "component of 熊猫",
+          "monsoon",
           "to summarize",
           "continent/mainland",
           "assign/duty"
@@ -6104,18 +4974,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "扶贫 (fúpín) means \"poverty alleviation\"."
       },
       {
-        "instruction": "Learn the word for 'environment' in Chinese.",
-        "question": "Which character means \"component of 京剧\"?",
-        "options": [
-          "剧",
-          "生物",
-          "射",
-          "恰"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 京剧\" is written as 剧 ()."
-      },
-      {
         "instruction": "Discuss water pollution. What does 污染 mean?",
         "question": "How do you pronounce \"乡\"?",
         "options": [
@@ -6132,24 +4990,12 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"旅行日记\" mean?",
         "options": [
           "cheerful/open",
-          "component of 突然",
+          "strategy",
           "Writing: travel diary",
           "zoo"
         ],
         "correctIndex": 2,
         "explanation": "旅行日记 (lǚxíng rìjì) means \"Writing: travel diary\"."
-      },
-      {
-        "instruction": "Create a slogan for the campaign.",
-        "question": "Which character means \"component of 申请\"?",
-        "options": [
-          "魅",
-          "细胞",
-          "矛",
-          "申"
-        ],
-        "correctIndex": 3,
-        "explanation": "\"component of 申请\" is written as 申 ()."
       },
       {
         "instruction": "Present statistics about air quality.",
@@ -6169,8 +5015,8 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "gardening",
           "More and more + adj",
-          "component of 退货",
-          "component of 烹饪"
+          "precise",
+          "obscure"
         ],
         "correctIndex": 1,
         "explanation": "越来越+Adj (yuè lái yuè + adj) means \"More and more + adj\"."
@@ -6198,18 +5044,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 1,
         "explanation": "率 is pronounced ."
-      },
-      {
-        "instruction": "Reflect on what you've learned.",
-        "question": "What does \"案\" mean?",
-        "options": [
-          "component of 牛肉",
-          "backpack",
-          "component of 档案",
-          "component of 骄傲"
-        ],
-        "correctIndex": 2,
-        "explanation": "案 () means \"component of 档案\"."
       }
     ]
   },
@@ -6230,7 +5064,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "instruction": "Read the performance program. What's showing tonight?",
         "question": "What does \"名人传记\" mean?",
         "options": [
-          "component of 民主",
+          "color",
           "to sign (agreement)",
           "to contend/fight",
           "Celebrity biography passage"
@@ -6263,18 +5097,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "幸福指数 is pronounced xìngfú zhǐshù."
       },
       {
-        "instruction": "Learn about the guzheng. What kind of instrument is it?",
-        "question": "What does \"求\" mean?",
-        "options": [
-          "component of 足球",
-          "component of 区块链",
-          "component of 即时通讯",
-          "component of 追求"
-        ],
-        "correctIndex": 3,
-        "explanation": "求 () means \"component of 追求\"."
-      },
-      {
         "instruction": "Watch a traditional dance. Describe the movements.",
         "question": "Which character means \"face\"?",
         "options": [
@@ -6305,7 +5127,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "suitable/cheap",
           "Silk Road",
           "to push",
-          "component of 孕妇"
+          "neat/even"
         ],
         "correctIndex": 2,
         "explanation": "推 (tuī) means \"to push\"."
@@ -6341,7 +5163,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "to praise/admire",
           "book",
           "true/real",
-          "component of 被动"
+          "sincere"
         ],
         "correctIndex": 1,
         "explanation": "书 (shū) means \"book\"."
@@ -6398,30 +5220,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "推 is pronounced tuī."
       },
       {
-        "instruction": "Create a day-by-day itinerary.",
-        "question": "What does \"辞\" mean?",
-        "options": [
-          "emerging market",
-          "component of 啤酒",
-          "debt",
-          "component of 辞职"
-        ],
-        "correctIndex": 3,
-        "explanation": "辞 () means \"component of 辞职\"."
-      },
-      {
-        "instruction": "Arrive in Xi'an. Ask for directions to the hotel.",
-        "question": "Which character means \"component of 公检法\"?",
-        "options": [
-          "检",
-          "生",
-          "破",
-          "终"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 公检法\" is written as 检 ()."
-      },
-      {
         "instruction": "Visit the Terracotta Warriors. Buy an entrance ticket.",
         "question": "How do you pronounce \"情\"?",
         "options": [
@@ -6432,30 +5230,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 1,
         "explanation": "情 is pronounced qíng."
-      },
-      {
-        "instruction": "Read the information about the warriors.",
-        "question": "What does \"军\" mean?",
-        "options": [
-          "component of 军人",
-          "to donate money",
-          "Green travel passage",
-          "step by step/gradually"
-        ],
-        "correctIndex": 0,
-        "explanation": "军 () means \"component of 军人\"."
-      },
-      {
-        "instruction": "Try local Xi'an food. What is 肉夹馍?",
-        "question": "Which character means \"component of 妥协\"?",
-        "options": [
-          "在学校",
-          "队",
-          "躁",
-          "协"
-        ],
-        "correctIndex": 3,
-        "explanation": "\"component of 妥协\" is written as 协 ()."
       },
       {
         "instruction": "Visit the city wall. Describe the view.",
@@ -6476,7 +5250,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
           "public welfare",
           "refugee",
           "to miss/cherish",
-          "component of 教育"
+          "fountain"
         ],
         "correctIndex": 1,
         "explanation": "难民 (nànmín) means \"refugee\"."
@@ -6501,24 +5275,12 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "question": "What does \"素质\" mean?",
         "options": [
           "negotiation",
-          "component of 端午节",
+          "mature",
           "quality/character",
-          "component of 退货"
+          "neat/even"
         ],
         "correctIndex": 2,
         "explanation": "素质 (sùzhì) means \"quality/character\"."
-      },
-      {
-        "instruction": "Learn about different types of Chinese tea.",
-        "question": "Which character means \"component of 邮局\"?",
-        "options": [
-          "间",
-          "具体",
-          "邮",
-          "单"
-        ],
-        "correctIndex": 2,
-        "explanation": "\"component of 邮局\" is written as 邮 ()."
       },
       {
         "instruction": "The host offers you 绿茶. What kind of tea is this?",
@@ -6581,18 +5343,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "explanation": "古迹 (gǔjì) means \"historic site\"."
       },
       {
-        "instruction": "Learn about the health benefits of tea.",
-        "question": "Which character means \"component of 留恋\"?",
-        "options": [
-          "留",
-          "诚恳",
-          "原因",
-          "同情"
-        ],
-        "correctIndex": 0,
-        "explanation": "\"component of 留恋\" is written as 留 ()."
-      },
-      {
         "instruction": "Ask about the history of Chinese tea culture.",
         "question": "How do you pronounce \"画龙点睛\"?",
         "options": [
@@ -6603,18 +5353,6 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         ],
         "correctIndex": 3,
         "explanation": "画龙点睛 is pronounced huà lóng diǎn jīng."
-      },
-      {
-        "instruction": "Thank your host and express appreciation.",
-        "question": "What does \"弹\" mean?",
-        "options": [
-          "component of 随遇而安",
-          "component of 弹幕",
-          "exit",
-          "component of 逐渐"
-        ],
-        "correctIndex": 1,
-        "explanation": "弹 () means \"component of 弹幕\"."
       }
     ]
   },
@@ -6673,7 +5411,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "trade/commerce",
           "to pay attention/follow",
-          "component of 选举",
+          "kingdom",
           "government/prefecture"
         ],
         "correctIndex": 0,
@@ -6709,7 +5447,7 @@ export const MULTISTEP_SCENARIOS: MultistepScenario[] = [
         "options": [
           "layer/floor",
           "society",
-          "component of 武器",
+          "Go (board game)",
           "wavelength"
         ],
         "correctIndex": 0,

@@ -192,7 +192,7 @@ function getPinyinQuestion(
     const candidates = bank.filter(
       (q) =>
         q.hskLevel === l &&
-        q.format === "pinyin_to_character" &&
+        q.format === "character_to_pinyin" &&
         !state.askedQuestionIds.has(q.id)
     );
     if (candidates.length > 0) {
@@ -265,7 +265,7 @@ function getFrontierQuestion(
   }
 
   if (state.pinyinQuestionCount < MAX_PINYIN_QUESTIONS) {
-    allowedFormats.push("pinyin_to_character");
+    allowedFormats.push("character_to_pinyin");
   }
 
   const targetLevels = [boundary, Math.max(1, boundary - 1)];
@@ -334,7 +334,7 @@ export function recordDiagnosticResponse(
   newAsked.add(question.id);
 
   let newPinyinCount = state.pinyinQuestionCount;
-  if (question.format === "pinyin_to_character") newPinyinCount++;
+  if (question.format === "character_to_pinyin") newPinyinCount++;
 
   const newLevelScores = { ...state.levelScores };
   if (!newLevelScores[nodeLevel]) {
