@@ -367,6 +367,12 @@ export function getTaskTypeInfo(type: TaskType) {
       borderColor: "var(--listening-blue)",
       badgeBg: "var(--listening-blue)",
     },
+    speaking: {
+      icon: "🎤",
+      label: "Speaking",
+      borderColor: "var(--speaking-brown)",
+      badgeBg: "var(--speaking-brown)",
+    },
   };
   return info[type];
 }
