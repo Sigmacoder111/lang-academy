@@ -12,7 +12,7 @@ export function generateMCQuestions(
   count: number
 ): MCQuestion[] {
   const questions: MCQuestion[] = [];
-  const distractors = graph.filter((n) => n.id !== targetNode.id);
+  const distractors = graph.filter((n) => n.id !== targetNode.id && !n.meaning.startsWith("component of"));
 
   if (targetNode.type === "grammar") {
     return generateGrammarQuestions(targetNode, distractors, count);

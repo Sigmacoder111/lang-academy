@@ -4,6 +4,7 @@ import type { UserProgress } from "../types/state";
 import type { TaskResult, MCQuestion } from "../types/tasks";
 import { generateMixedQuestions } from "../engine/tasks";
 import { GRAPH } from "../data/graph";
+import ErrorCorrectionFlow from "./ErrorCorrectionFlow";
 
 interface QuizViewProps {
   topic: GraphNode;
@@ -31,6 +32,7 @@ export default function QuizView({ topic, progress, onComplete, onBack }: QuizVi
   const [timeRemaining, setTimeRemaining] = useState(QUIZ_TIME_SECONDS);
   const [done, setDone] = useState(false);
   const [missedTopics, setMissedTopics] = useState<string[]>([]);
+  const [showErrorCorrection, setShowErrorCorrection] = useState(false);
 
   useEffect(() => {
     if (done) return;
@@ -55,17 +57,19 @@ export default function QuizView({ topic, progress, onComplete, onBack }: QuizVi
   const handleAnswer = useCallback((idx: number) => {
     if (selectedAnswer !== null || done) return;
     setSelectedAnswer(idx);
-    setShowExplanation(true);
 
     const correct = idx === questions[currentQ].correctIndex;
     if (correct) {
       setTotalCorrect((c) => c + 1);
+      setShowExplanation(true);
     } else {
       setMissedTopics((prev) => [...new Set([...prev, questions[currentQ].topicId])]);
+      setShowErrorCorrection(true);
     }
   }, [selectedAnswer, done, questions, currentQ]);
 
   const advance = useCallback(() => {
+    setShowErrorCorrection(false);
     if (currentQ + 1 >= questions.length) {
       setDone(true);
       return;
@@ -254,10 +258,18 @@ export default function QuizView({ topic, progress, onComplete, onBack }: QuizVi
           })}
         </div>
 
-        {showExplanation && (
-          <div style={{ marginTop: "1rem", padding: "1rem", borderRadius: "0.75rem", background: isCorrect ? "rgba(74, 140, 111, 0.08)" : "rgba(193, 95, 60, 0.08)", animation: "fadeIn 0.3s ease" }}>
-            <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "14px", fontWeight: 600, color: isCorrect ? "var(--success)" : "var(--error)", marginBottom: "0.25rem" }}>
-              {isCorrect ? "Correct!" : "Incorrect"}
+        {showErrorCorrection && selectedAnswer !== null && !isCorrect && (
+          <ErrorCorrectionFlow
+            question={q}
+            selectedAnswer={selectedAnswer}
+            onComplete={advance}
+          />
+        )}
+
+        {showExplanation && isCorrect && (
+          <div style={{ marginTop: "1rem", padding: "1rem", borderRadius: "0.75rem", background: "rgba(74, 140, 111, 0.08)", animation: "fadeIn 0.3s ease" }}>
+            <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "14px", fontWeight: 600, color: "var(--success)", marginBottom: "0.25rem" }}>
+              Correct!
             </div>
             <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "14px", color: "var(--text-primary)" }}>
               {q.explanation}

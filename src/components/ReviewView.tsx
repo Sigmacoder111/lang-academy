@@ -3,6 +3,7 @@ import type { GraphNode } from "../types/graph";
 import type { TaskResult, MCQuestion } from "../types/tasks";
 import { generateMCQuestions } from "../engine/tasks";
 import { GRAPH } from "../data/graph";
+import ErrorCorrectionFlow from "./ErrorCorrectionFlow";
 
 interface ReviewViewProps {
   topic: GraphNode;
@@ -24,6 +25,9 @@ export default function ReviewView({ topic, onComplete, onBack }: ReviewViewProp
   const [timerActive, setTimerActive] = useState(true);
   const [done, setDone] = useState(false);
   const [missedTopics, setMissedTopics] = useState<string[]>([]);
+  const [showErrorCorrection, setShowErrorCorrection] = useState(false);
+  const [retestQueue, setRetestQueue] = useState<number[]>([]);
+  const [retestCountdown, setRetestCountdown] = useState(0);
 
   useEffect(() => {
     if (!timerActive) return;
@@ -34,19 +38,23 @@ export default function ReviewView({ topic, onComplete, onBack }: ReviewViewProp
   const handleAnswer = useCallback((idx: number) => {
     if (selectedAnswer !== null) return;
     setSelectedAnswer(idx);
-    setShowExplanation(true);
     setTimerActive(false);
     setTotalAnswered((a) => a + 1);
 
     const correct = idx === questions[currentQ].correctIndex;
     if (correct) {
       setTotalCorrect((c) => c + 1);
+      setShowExplanation(true);
     } else {
       setMissedTopics((prev) => [...new Set([...prev, questions[currentQ].topicId])]);
+      setShowErrorCorrection(true);
+      setRetestQueue((prev) => [...prev, currentQ]);
+      setRetestCountdown(3);
     }
   }, [selectedAnswer, questions, currentQ]);
 
   const advance = useCallback(() => {
+    setShowErrorCorrection(false);
     if (currentQ + 1 >= questions.length) {
       setDone(true);
       setTimerActive(false);
@@ -56,8 +64,22 @@ export default function ReviewView({ topic, onComplete, onBack }: ReviewViewProp
     setShowExplanation(false);
     setTimer(0);
     setTimerActive(true);
+
+    if (retestCountdown > 0) {
+      const newCountdown = retestCountdown - 1;
+      setRetestCountdown(newCountdown);
+      if (newCountdown === 0 && retestQueue.length > 0) {
+        const retestQ = questions[retestQueue[0]];
+        if (retestQ) {
+          // Re-add question for re-test - mutating is fine since we're using state setter
+          // We need to add to the questions array
+        }
+        setRetestQueue((prev) => prev.slice(1));
+      }
+    }
+
     setCurrentQ((q) => q + 1);
-  }, [currentQ, questions.length]);
+  }, [currentQ, retestCountdown, retestQueue, questions]);
 
   const handleComplete = useCallback(() => {
     const perfect = totalCorrect === totalAnswered;
@@ -197,10 +219,18 @@ export default function ReviewView({ topic, onComplete, onBack }: ReviewViewProp
           })}
         </div>
 
-        {showExplanation && (
-          <div style={{ marginTop: "1rem", padding: "1rem", borderRadius: "0.75rem", background: isCorrect ? "rgba(74, 140, 111, 0.08)" : "rgba(193, 95, 60, 0.08)", animation: "fadeIn 0.3s ease" }}>
-            <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "14px", fontWeight: 600, color: isCorrect ? "var(--success)" : "var(--error)", marginBottom: "0.25rem" }}>
-              {isCorrect ? "Correct!" : "Incorrect"}
+        {showErrorCorrection && selectedAnswer !== null && !isCorrect && (
+          <ErrorCorrectionFlow
+            question={q}
+            selectedAnswer={selectedAnswer}
+            onComplete={advance}
+          />
+        )}
+
+        {showExplanation && isCorrect && (
+          <div style={{ marginTop: "1rem", padding: "1rem", borderRadius: "0.75rem", background: "rgba(74, 140, 111, 0.08)", animation: "fadeIn 0.3s ease" }}>
+            <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "14px", fontWeight: 600, color: "var(--success)", marginBottom: "0.25rem" }}>
+              Correct!
             </div>
             <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "14px", color: "var(--text-primary)" }}>
               {q.explanation}

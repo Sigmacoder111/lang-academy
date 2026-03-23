@@ -78,6 +78,7 @@ export function selectTasks(
 
   for (const node of graph) {
     if (!isUnlocked(node.id, graph, progress)) continue;
+    if (node.meaning.startsWith("component of")) continue;
 
     const state = progress[node.id];
     if (state) {
