@@ -361,6 +361,12 @@ export function getTaskTypeInfo(type: TaskType) {
       borderColor: "var(--success)",
       badgeBg: "var(--success)",
     },
+    listening: {
+      icon: "🎧",
+      label: "Listening",
+      borderColor: "var(--listening-blue)",
+      badgeBg: "var(--listening-blue)",
+    },
   };
   return info[type];
 }

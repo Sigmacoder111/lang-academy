@@ -184,7 +184,25 @@ export function selectTasks(
     });
   }
 
-  // 6. Multistep tasks
+  // 6. Listening tasks — offer a listening exercise when student has some mastery
+  if (mastered.length >= 2 && tasks.length < MAX_TASKS) {
+    const vocabNodes = mastered.filter(
+      (n) => n.type === "word" || n.type === "character"
+    );
+    const listeningTopic =
+      vocabNodes.length > 0
+        ? vocabNodes[Math.floor(Math.random() * vocabNodes.length)]
+        : mastered[Math.floor(Math.random() * mastered.length)];
+    addTask({
+      id: `listening-${Date.now()}`,
+      type: "listening",
+      topic: listeningTopic,
+      xpReward: 6,
+      estimatedMinutes: 5,
+    });
+  }
+
+  // 7. Multistep tasks
   if (mastered.length >= 4 && tasks.length < MAX_TASKS) {
     const multistepTopic = mastered[Math.floor(Math.random() * mastered.length)];
     addTask({

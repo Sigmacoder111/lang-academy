@@ -17,11 +17,12 @@ import LessonView from "./components/LessonView";
 import ReviewView from "./components/ReviewView";
 import QuizView from "./components/QuizView";
 import MultistepView from "./components/MultistepView";
+import ListeningView from "./components/ListeningView";
 import DiagnosticTest from "./components/DiagnosticTest";
 import DiagnosticReportView from "./components/DiagnosticReport";
 import XPBar from "./components/XPBar";
 
-type View = "dashboard" | "lesson" | "review" | "quiz" | "multistep" | "diagnostic" | "diagnostic_report";
+type View = "dashboard" | "lesson" | "review" | "quiz" | "multistep" | "listening" | "diagnostic" | "diagnostic_report";
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -294,6 +295,14 @@ function App() {
           <MultistepView
             topic={activeTask.topic}
             progress={progress}
+            onComplete={handleTaskComplete}
+            onBack={handleBack}
+          />
+        )}
+
+        {view === "listening" && activeTask && (
+          <ListeningView
+            topic={activeTask.topic}
             onComplete={handleTaskComplete}
             onBack={handleBack}
           />
