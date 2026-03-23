@@ -79,7 +79,7 @@ export default function ReviewView({ topic, onComplete, onBack }: ReviewViewProp
     }
 
     setCurrentQ((q) => q + 1);
-  }, [currentQ, questions.length, retestCountdown, retestQueue, questions]);
+  }, [currentQ, retestCountdown, retestQueue, questions]);
 
   const handleComplete = useCallback(() => {
     const perfect = totalCorrect === totalAnswered;

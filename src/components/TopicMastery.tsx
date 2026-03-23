@@ -17,7 +17,7 @@ export default function TopicMastery({ graph, progress }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const layers = useMemo(() => getHSKLayers(graph), [graph]);
-  const now = Date.now();
+  const [now] = useState(() => Date.now());
 
   const toggleLevel = (levelId: string) => {
     setExpandedLevels((prev) => {
