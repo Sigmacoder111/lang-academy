@@ -3,7 +3,6 @@ import type { GraphNode } from "../types/graph";
 import type { TaskResult } from "../types/tasks";
 import {
   selectMixedSpeakingExercises,
-  type SpeakingExercise,
   type ConversationExercise,
   type PresentationExercise,
   type WordExercise,
