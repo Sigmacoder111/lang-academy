@@ -42,6 +42,8 @@ export default function ActivityLog() {
     { value: "review", label: "Reviews" },
     { value: "quiz", label: "Quizzes" },
     { value: "multistep", label: "Multisteps" },
+    { value: "listening", label: "Listening" },
+    { value: "speaking", label: "Speaking" },
   ];
 
   return (

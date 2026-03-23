@@ -202,7 +202,25 @@ export function selectTasks(
     });
   }
 
-  // 7. Multistep tasks
+  // 7. Speaking tasks — offer speaking practice when student has some mastery
+  if (mastered.length >= 2 && tasks.length < MAX_TASKS) {
+    const speakingCandidates = mastered.filter(
+      (n) => n.type === "word" || n.type === "character" || n.type === "grammar"
+    );
+    const speakingTopic =
+      speakingCandidates.length > 0
+        ? speakingCandidates[Math.floor(Math.random() * speakingCandidates.length)]
+        : mastered[Math.floor(Math.random() * mastered.length)];
+    addTask({
+      id: `speaking-${Date.now()}`,
+      type: "speaking",
+      topic: speakingTopic,
+      xpReward: 8,
+      estimatedMinutes: 6,
+    });
+  }
+
+  // 8. Multistep tasks
   if (mastered.length >= 4 && tasks.length < MAX_TASKS) {
     const multistepTopic = mastered[Math.floor(Math.random() * mastered.length)];
     addTask({

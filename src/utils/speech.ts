@@ -76,3 +76,116 @@ export function stopSpeaking(): void {
 export function isSpeechSupported(): boolean {
   return typeof window !== "undefined" && "speechSynthesis" in window;
 }
+
+export function isSpeechRecognitionSupported(): boolean {
+  if (typeof window === "undefined") return false;
+  return !!(
+    (window as unknown as Record<string, unknown>).SpeechRecognition ||
+    (window as unknown as Record<string, unknown>).webkitSpeechRecognition
+  );
+}
+
+export function startSpeechRecognition(options?: {
+  maxAlternatives?: number;
+  continuous?: boolean;
+  onInterim?: (text: string) => void;
+}): { promise: Promise<string>; stop: () => void } {
+  const SpeechRecognition =
+    (window as unknown as Record<string, unknown>).SpeechRecognition ||
+    (window as unknown as Record<string, unknown>).webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    return {
+      promise: Promise.reject(new Error("SpeechRecognition not supported")),
+      stop: () => {},
+    };
+  }
+
+  const recognition = new (SpeechRecognition as new () => SpeechRecognition)();
+  recognition.lang = "zh-CN";
+  recognition.interimResults = !!options?.onInterim;
+  recognition.maxAlternatives = options?.maxAlternatives ?? 3;
+  recognition.continuous = options?.continuous ?? false;
+
+  let finalTranscript = "";
+  let stopped = false;
+
+  const promise = new Promise<string>((resolve, reject) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          finalTranscript += result[0].transcript;
+        } else {
+          interim += result[0].transcript;
+        }
+      }
+      if (options?.onInterim && interim) {
+        options.onInterim(finalTranscript + interim);
+      }
+    };
+
+    recognition.onend = () => {
+      resolve(finalTranscript);
+    };
+
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      if (event.error === "no-speech" || event.error === "aborted") {
+        resolve(finalTranscript || "");
+      } else {
+        reject(new Error(event.error));
+      }
+    };
+
+    recognition.start();
+  });
+
+  const stop = () => {
+    if (!stopped) {
+      stopped = true;
+      recognition.stop();
+    }
+  };
+
+  return { promise, stop };
+}
+
+interface SpeechRecognition extends EventTarget {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  continuous: boolean;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onend: (() => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  start(): void;
+  stop(): void;
+  abort(): void;
+}
+
+interface SpeechRecognitionEvent {
+  resultIndex: number;
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  isFinal: boolean;
+  length: number;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string;
+  message: string;
+}
