@@ -10,6 +10,7 @@ import TopicMastery from "./TopicMastery";
 import GapsPanel from "./GapsPanel";
 import ActivityLog from "./ActivityLog";
 import ThemeMasteryBreakdown from "./ThemeMasteryBreakdown";
+import MockExamScoreChart from "./MockExamScoreChart";
 
 interface Props {
   graph: GraphNode[];
@@ -83,6 +84,7 @@ export default function ProgressView({ graph, progress, xpState }: Props) {
               progress={progress}
               xpState={xpState}
             />
+            <MockExamScoreChart />
             <ThemeMasteryBreakdown
               graph={graph}
               progress={progress}
