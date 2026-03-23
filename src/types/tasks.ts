@@ -1,6 +1,6 @@
 import type { GraphNode } from "./graph";
 
-export type TaskType = "lesson" | "review" | "quiz" | "multistep" | "listening";
+export type TaskType = "lesson" | "review" | "quiz" | "multistep" | "listening" | "speaking";
 
 export interface BaseTask {
   id: string;
@@ -39,7 +39,15 @@ export interface ListeningTask extends BaseTask {
   exerciseIds?: string[];
 }
 
-export type Task = LessonTask | ReviewTask | QuizTask | MultistepTask | ListeningTask;
+export type SpeakingExerciseType = "word" | "sentence" | "conversation" | "presentation";
+
+export interface SpeakingTask extends BaseTask {
+  type: "speaking";
+  topic: GraphNode;
+  exerciseType?: SpeakingExerciseType;
+}
+
+export type Task = LessonTask | ReviewTask | QuizTask | MultistepTask | ListeningTask | SpeakingTask;
 
 export interface XPState {
   totalXP: number;
