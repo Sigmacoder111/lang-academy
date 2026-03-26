@@ -26,6 +26,7 @@ interface DashboardProps {
   xpState: XPState;
   onSelectTask: (task: Task) => void;
   onStartDiagnostic?: () => void;
+  onStartMockExam?: () => void;
 }
 
 export default function Dashboard({
@@ -34,6 +35,7 @@ export default function Dashboard({
   xpState,
   onSelectTask,
   onStartDiagnostic,
+  onStartMockExam,
 }: DashboardProps) {
   const [themeWeights, setThemeWeights] = useState<ThemeWeights>(loadThemeWeights);
   const [autoBalance, setAutoBalance] = useState(loadAutoBalance);
@@ -242,6 +244,60 @@ export default function Dashboard({
                 }}
               >
                 ~35 questions · Measures mastery &amp; speed · Get personalized study plan
+              </div>
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* Mock Exam button */}
+      {onStartMockExam && (
+        <div style={{ marginBottom: "1.5rem" }}>
+          <button
+            onClick={onStartMockExam}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              width: "100%",
+              background: "var(--surface)",
+              boxShadow: "0 0.25rem 1.25rem rgba(0,0,0,0.035)",
+              borderRadius: "1rem",
+              padding: "1rem 1.5rem",
+              border: "1.5px solid var(--accent)",
+              cursor: "pointer",
+              textAlign: "left" as const,
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-1px)";
+              e.currentTarget.style.boxShadow = "0 0.5rem 2rem rgba(0,0,0,0.06)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 0.25rem 1.25rem rgba(0,0,0,0.035)";
+            }}
+          >
+            <span style={{ fontSize: "1.25rem" }}>&#128221;</span>
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontSize: "15px",
+                  fontWeight: 600,
+                  color: "var(--accent)",
+                }}
+              >
+                Take AP Chinese Practice Exam
+              </div>
+              <div
+                style={{
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontSize: "13px",
+                  color: "var(--text-muted)",
+                }}
+              >
+                ~95 min · Full exam simulation · Listening, Reading, Writing, Speaking
               </div>
             </div>
           </button>

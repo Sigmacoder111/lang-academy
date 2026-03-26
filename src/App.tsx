@@ -22,8 +22,9 @@ import SpeakingView from "./components/SpeakingView";
 import DiagnosticTest from "./components/DiagnosticTest";
 import DiagnosticReportView from "./components/DiagnosticReport";
 import XPBar from "./components/XPBar";
+import MockExam from "./components/MockExam";
 
-type View = "dashboard" | "lesson" | "review" | "quiz" | "multistep" | "listening" | "speaking" | "diagnostic" | "diagnostic_report";
+type View = "dashboard" | "lesson" | "review" | "quiz" | "multistep" | "listening" | "speaking" | "diagnostic" | "diagnostic_report" | "mock_exam";
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -176,6 +177,15 @@ function App() {
     setView("diagnostic");
   }, []);
 
+  const handleStartMockExam = useCallback(() => {
+    setView("mock_exam");
+  }, []);
+
+  const handleMockExamComplete = useCallback(() => {
+    setView("dashboard");
+    setDashboardKey((k) => k + 1);
+  }, []);
+
   return (
     <div
       style={{
@@ -256,6 +266,7 @@ function App() {
             xpState={xpState}
             onSelectTask={handleSelectTask}
             onStartDiagnostic={handleStartDiagnostic}
+            onStartMockExam={handleStartMockExam}
           />
         )}
 
@@ -314,6 +325,13 @@ function App() {
             topic={activeTask.topic}
             onComplete={handleTaskComplete}
             onBack={handleBack}
+          />
+        )}
+
+        {view === "mock_exam" && (
+          <MockExam
+            onBack={handleBack}
+            onComplete={handleMockExamComplete}
           />
         )}
 
