@@ -5,6 +5,26 @@ export { selectTasks, DEFAULT_CATEGORY_WEIGHTS } from "./task-selector";
 export type { CategoryWeights } from "./task-selector";
 export { loadXPState, saveXPState } from "./xp";
 export { fallBackwards } from "./mastery";
+export {
+  getSkillReadiness,
+  generateSmartSession,
+  generateWeeklyPlan,
+  generateDrillTask,
+  detectWeakSpots,
+  getExamProximityConfig,
+  getDaysUntilExam,
+  getSkillLabel,
+  getReadinessColor,
+  SKILL_AREAS,
+} from "./adaptive-study";
+export type {
+  SkillReadiness,
+  SessionPlan,
+  SessionSegment,
+  WeeklyPlan,
+  WeeklyRecommendation,
+  ExamProximityConfig,
+} from "./adaptive-study";
 
 export function generateMCQuestions(
   targetNode: GraphNode,
@@ -372,6 +392,12 @@ export function getTaskTypeInfo(type: TaskType) {
       label: "Speaking",
       borderColor: "var(--speaking-brown)",
       badgeBg: "var(--speaking-brown)",
+    },
+    drill: {
+      icon: "🎯",
+      label: "Weak Spot Drill",
+      borderColor: "#ef4444",
+      badgeBg: "#ef4444",
     },
   };
   return info[type];

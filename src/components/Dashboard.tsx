@@ -18,7 +18,11 @@ import {
   loadAPExamDate,
   saveAPExamDate,
 } from "../data/themes";
+import { getExamProximityConfig } from "../engine/adaptive-study";
 import XPBar from "./XPBar";
+import ExamCountdown from "./ExamCountdown";
+import QuickStudy from "./QuickStudy";
+import WeeklyStudyPlan from "./WeeklyStudyPlan";
 
 interface DashboardProps {
   graph: GraphNode[];
@@ -112,74 +116,48 @@ export default function Dashboard({
         />
       </div>
 
-      {/* AP Exam Countdown */}
-      {daysUntilExam > 0 && (
+      {/* Exam Countdown with Skill Readiness Bars */}
+      <ExamCountdown graph={graph} progress={progress} />
+
+      {/* Quick Study Button */}
+      <QuickStudy
+        graph={graph}
+        progress={progress}
+        xpState={xpState}
+        onStartSession={(sessionTasks) => {
+          if (sessionTasks.length > 0) {
+            onSelectTask(sessionTasks[0]);
+          }
+        }}
+      />
+
+      {/* Weekly Study Plan */}
+      <WeeklyStudyPlan graph={graph} progress={progress} />
+
+      {/* Review-only mode banner */}
+      {getExamProximityConfig().reviewOnlyMode && (
         <div
           style={{
-            background: "var(--surface)",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            background: "rgba(239, 68, 68, 0.05)",
+            border: "1px solid rgba(239, 68, 68, 0.15)",
             borderRadius: "0.75rem",
-            padding: "1rem 1.25rem",
+            padding: "0.75rem 1rem",
             marginBottom: "1.5rem",
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            gap: "0.5rem",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <span
-              style={{
-                fontFamily: "Georgia, 'Times New Roman', serif",
-                fontSize: "2rem",
-                fontWeight: 700,
-                color: "var(--accent)",
-                lineHeight: 1,
-              }}
-            >
-              {daysUntilExam}
-            </span>
-            <div>
-              <div
-                style={{
-                  fontFamily: "Georgia, 'Times New Roman', serif",
-                  fontSize: "0.9375rem",
-                  fontWeight: 600,
-                  color: "var(--text-primary)",
-                }}
-              >
-                days until AP Chinese
-              </div>
-              <div
-                style={{
-                  fontFamily: "Georgia, 'Times New Roman', serif",
-                  fontSize: "0.75rem",
-                  color: "var(--text-muted)",
-                }}
-              >
-                {new Date(examDate).toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </div>
-            </div>
-          </div>
-          <input
-            type="date"
-            value={examDate}
-            onChange={(e) => handleExamDateChange(e.target.value)}
+          <span style={{ fontSize: "1rem" }}>&#9888;&#65039;</span>
+          <div
             style={{
               fontFamily: "Georgia, 'Times New Roman', serif",
-              fontSize: "0.75rem",
-              color: "var(--text-muted)",
-              background: "transparent",
-              border: "1px solid var(--border)",
-              borderRadius: "0.375rem",
-              padding: "0.25rem 0.5rem",
-              cursor: "pointer",
+              fontSize: "0.8125rem",
+              color: "#ef4444",
             }}
-          />
+          >
+            <strong>Review-only mode:</strong> Less than 7 days until exam. No new material — focus on reinforcing what you know.
+          </div>
         </div>
       )}
 

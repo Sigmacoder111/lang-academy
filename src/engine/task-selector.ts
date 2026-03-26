@@ -4,6 +4,12 @@ import type { Task, XPState } from "../types/tasks";
 import type { ThemeWeights } from "../data/themes";
 import { isUnlocked } from "./mastery";
 import { needsReview, overdueScore } from "./hierarchical-srs";
+import {
+  getExamProximityConfig,
+  detectWeakSpots,
+  generateDrillTask,
+  getSkillReadiness,
+} from "./adaptive-study";
 
 const QUIZ_GATE_XP = 150;
 const MAX_TASKS = 5;
@@ -39,16 +45,34 @@ function getThemeWeight(node: GraphNode, themeWeights?: ThemeWeights): number {
   return maxWeight;
 }
 
+function getWeaknessWeight(
+  node: GraphNode,
+  progress: UserProgress,
+  boostFactor: number
+): number {
+  if (boostFactor <= 1) return 1;
+  const state = progress[node.id];
+  if (!state) return boostFactor;
+  if (state.mastery < 0.5) return boostFactor;
+  if (state.mastery < 0.8) return 1 + (boostFactor - 1) * 0.5;
+  return 1;
+}
+
 function weightedShuffle(
   nodes: GraphNode[],
   weights: CategoryWeights,
-  themeWeights?: ThemeWeights
+  themeWeights?: ThemeWeights,
+  progress?: UserProgress,
+  weaknessBoost?: number
 ): GraphNode[] {
   const scored = nodes.map((node) => {
     const cat = getNodeCategory(node.type);
     const catWeight = weights[cat];
     const tw = getThemeWeight(node, themeWeights);
-    return { node, score: Math.random() * catWeight * tw };
+    const ww = progress && weaknessBoost
+      ? getWeaknessWeight(node, progress, weaknessBoost)
+      : 1;
+    return { node, score: Math.random() * catWeight * tw * ww };
   });
   scored.sort((a, b) => b.score - a.score);
   return scored.map((s) => s.node);
@@ -58,6 +82,10 @@ function weightedShuffle(
  * Select up to 5 optimal tasks for the student to choose from.
  * Uses category weights to balance vocabulary, grammar, reading, and writing.
  * Optionally applies theme weights to bias toward specific AP themes.
+ * Auto-rebalances as the AP exam approaches:
+ * - < 30 days: increased weight on weakest areas
+ * - < 14 days: heavy review + speaking/writing practice
+ * - < 7 days: review only, no new material
  */
 export function selectTasks(
   graph: GraphNode[],
@@ -69,6 +97,8 @@ export function selectTasks(
   const tasks: Task[] = [];
   const usedTopicIds = new Set<string>();
   const now = Date.now();
+
+  const examConfig = getExamProximityConfig();
 
   const overdueReviews: { node: GraphNode; score: number }[] = [];
   const newUnlocked: GraphNode[] = [];
@@ -83,7 +113,10 @@ export function selectTasks(
     const state = progress[node.id];
     if (state) {
       if (needsReview(node.id, progress, now)) {
-        const score = overdueScore(node.id, progress, now);
+        let score = overdueScore(node.id, progress, now);
+        if (examConfig.weaknessBoostFactor > 1 && state.mastery < 0.5) {
+          score *= examConfig.weaknessBoostFactor;
+        }
         if (score > 0) {
           overdueReviews.push({ node, score });
         }
@@ -112,7 +145,13 @@ export function selectTasks(
 
   overdueReviews.sort((a, b) => b.score - a.score);
 
-  const weightedNewUnlocked = weightedShuffle(newUnlocked, categoryWeights, themeWeights);
+  const weightedNewUnlocked = weightedShuffle(
+    newUnlocked,
+    categoryWeights,
+    themeWeights,
+    progress,
+    examConfig.weaknessBoostFactor
+  );
 
   function addTask(task: Task): boolean {
     if (tasks.length >= MAX_TASKS) return false;
@@ -150,8 +189,9 @@ export function selectTasks(
     });
   }
 
-  // 3. Overdue reviews (hierarchical SRS-aware)
-  for (const { node } of overdueReviews.slice(0, 2)) {
+  // 3. Overdue reviews — in review-only mode, fill more slots with reviews
+  const reviewSlots = examConfig.reviewOnlyMode ? 4 : examConfig.heavyReviewMode ? 3 : 2;
+  for (const { node } of overdueReviews.slice(0, reviewSlots)) {
     addTask({
       id: `review-${node.id}`,
       type: "review",
@@ -161,30 +201,44 @@ export function selectTasks(
     });
   }
 
-  // 4. Gap remediation (parallel paths)
-  for (const gap of foundationalGaps.slice(0, 1)) {
-    addTask({
-      id: `lesson-${gap.id}`,
-      type: "lesson",
-      topic: gap,
-      xpReward: 10,
-      estimatedMinutes: 8,
-    });
+  // In review-only mode (< 7 days before exam), skip new material
+  if (!examConfig.reviewOnlyMode) {
+    // 4. Gap remediation (parallel paths)
+    for (const gap of foundationalGaps.slice(0, 1)) {
+      addTask({
+        id: `lesson-${gap.id}`,
+        type: "lesson",
+        topic: gap,
+        xpReward: 10,
+        estimatedMinutes: 8,
+      });
+    }
+
+    // 5. New lessons — weighted by category (skip if new material not allowed)
+    if (examConfig.newMaterialAllowed) {
+      for (const node of weightedNewUnlocked) {
+        if (tasks.length >= MAX_TASKS - 1) break;
+        addTask({
+          id: `lesson-${node.id}`,
+          type: "lesson",
+          topic: node,
+          xpReward: 10,
+          estimatedMinutes: 8,
+        });
+      }
+    }
   }
 
-  // 5. New lessons — weighted by category
-  for (const node of weightedNewUnlocked) {
-    if (tasks.length >= MAX_TASKS - 1) break;
-    addTask({
-      id: `lesson-${node.id}`,
-      type: "lesson",
-      topic: node,
-      xpReward: 10,
-      estimatedMinutes: 8,
-    });
+  // 5b. Weak Spot Drill — inject when system detects a specific weakness
+  const weakSpots = detectWeakSpots(graph, progress);
+  if (weakSpots.length > 0 && tasks.length < MAX_TASKS) {
+    const drillTask = generateDrillTask(weakSpots[0], graph, progress);
+    if (drillTask) {
+      addTask(drillTask);
+    }
   }
 
-  // 6. Listening tasks — offer a listening exercise when student has some mastery
+  // 6. Listening tasks
   if (mastered.length >= 2 && tasks.length < MAX_TASKS) {
     const vocabNodes = mastered.filter(
       (n) => n.type === "word" || n.type === "character"
@@ -202,7 +256,7 @@ export function selectTasks(
     });
   }
 
-  // 7. Speaking tasks — offer speaking practice when student has some mastery
+  // 7. Speaking tasks — boost priority in heavy review mode (< 14 days)
   if (mastered.length >= 2 && tasks.length < MAX_TASKS) {
     const speakingCandidates = mastered.filter(
       (n) => n.type === "word" || n.type === "character" || n.type === "grammar"
@@ -220,8 +274,8 @@ export function selectTasks(
     });
   }
 
-  // 8. Multistep tasks
-  if (mastered.length >= 4 && tasks.length < MAX_TASKS) {
+  // 8. Multistep tasks (skip in review-only mode)
+  if (!examConfig.reviewOnlyMode && mastered.length >= 4 && tasks.length < MAX_TASKS) {
     const multistepTopic = mastered[Math.floor(Math.random() * mastered.length)];
     addTask({
       id: `multistep-${Date.now()}`,
@@ -233,9 +287,26 @@ export function selectTasks(
     });
   }
 
-  // Fill remaining slots using category weights
+  // Fill remaining slots
   while (tasks.length < MAX_TASKS) {
     let added = false;
+
+    // In review-only mode, only fill with reviews
+    if (examConfig.reviewOnlyMode) {
+      const reviewIdx = overdueReviews.findIndex((r) => !usedTopicIds.has(r.node.id));
+      if (reviewIdx >= 0) {
+        const { node: rNode } = overdueReviews[reviewIdx];
+        added = addTask({
+          id: `review-${rNode.id}`,
+          type: "review",
+          topic: rNode,
+          xpReward: 5,
+          estimatedMinutes: 3,
+        });
+        if (added) continue;
+      }
+      break;
+    }
 
     const node = weightedNewUnlocked.find((n) => !usedTopicIds.has(n.id));
     if (node) {
