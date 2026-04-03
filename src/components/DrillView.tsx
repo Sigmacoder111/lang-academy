@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import type { GraphNode } from "../types/graph";
-import type { Task, TaskResult, MCQuestion, DrillTask, SkillArea } from "../types/tasks";
+import type { TaskResult, MCQuestion, DrillTask } from "../types/tasks";
 import { generateMCQuestions } from "../engine/tasks";
 import { getSkillLabel } from "../engine/adaptive-study";
 

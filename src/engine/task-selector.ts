@@ -8,7 +8,6 @@ import {
   getExamProximityConfig,
   detectWeakSpots,
   generateDrillTask,
-  getSkillReadiness,
 } from "./adaptive-study";
 
 const QUIZ_GATE_XP = 150;

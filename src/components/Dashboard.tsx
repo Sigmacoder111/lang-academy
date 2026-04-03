@@ -15,8 +15,6 @@ import {
   saveThemeWeights,
   loadAutoBalance,
   saveAutoBalance,
-  loadAPExamDate,
-  saveAPExamDate,
 } from "../data/themes";
 import { getExamProximityConfig } from "../engine/adaptive-study";
 import XPBar from "./XPBar";
@@ -44,7 +42,6 @@ export default function Dashboard({
   const [themeWeights, setThemeWeights] = useState<ThemeWeights>(loadThemeWeights);
   const [autoBalance, setAutoBalance] = useState(loadAutoBalance);
   const [showFocus, setShowFocus] = useState(false);
-  const [examDate, setExamDate] = useState(loadAPExamDate);
 
   const themeStats = useMemo(
     () => getThemeStats(graph, progress),
@@ -67,12 +64,6 @@ export default function Dashboard({
   const stats = useMemo(() => getStats(graph, progress), [graph, progress]);
   const completionPercent = Math.round((stats.mastered / stats.total) * 100);
 
-  const daysUntilExam = useMemo(() => {
-    const target = new Date(examDate);
-    const now = new Date();
-    return Math.max(0, Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
-  }, [examDate]);
-
   const handleWeightChange = useCallback(
     (key: string, value: number) => {
       const next = { ...themeWeights, [key]: value };
@@ -92,11 +83,6 @@ export default function Dashboard({
       saveThemeWeights(w);
     }
   }, [autoBalance]);
-
-  const handleExamDateChange = useCallback((val: string) => {
-    setExamDate(val);
-    saveAPExamDate(val);
-  }, []);
 
   return (
     <div

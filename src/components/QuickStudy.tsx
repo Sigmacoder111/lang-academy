@@ -6,7 +6,6 @@ import {
   generateSmartSession,
   getSkillLabel,
   getReadinessColor,
-  getSkillReadiness,
   type SessionPlan,
 } from "../engine/adaptive-study";
 
