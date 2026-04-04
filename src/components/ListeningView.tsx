@@ -10,7 +10,7 @@ import type {
 } from "../data/listening-exercises";
 import { selectListeningExercises } from "../data/listening-exercises";
 import AudioPlayer from "./AudioPlayer";
-import { speakChineseWithVoice, stopSpeaking } from "../utils/speech";
+import { playDialogueLineAudio, stopSpeaking } from "../utils/speech";
 
 interface ListeningViewProps {
   topic: GraphNode;
@@ -319,6 +319,7 @@ function VocabularyExerciseView({
     <>
       <AudioPlayer
         text={exercise.audioText}
+        audioPath={`/audio/listening/${exercise.id}.mp3`}
         onPlaybackComplete={onAudioComplete}
         maxReplays={2}
       />
@@ -524,6 +525,7 @@ function SentenceExerciseView({
     <>
       <AudioPlayer
         text={exercise.audioText}
+        audioPath={`/audio/listening/${exercise.id}.mp3`}
         onPlaybackComplete={onAudioComplete}
         maxReplays={2}
       />
@@ -724,16 +726,23 @@ function DialogueExerciseView({
   const playDialogue = useCallback(async () => {
     if (isPlaying) return;
     setIsPlaying(true);
-    for (const line of exercise.lines) {
+    for (let i = 0; i < exercise.lines.length; i++) {
+      const line = exercise.lines[i];
       if (!mountedRef.current) return;
-      await speakChineseWithVoice(line.text, line.speaker === "A", 0.9);
+      await playDialogueLineAudio(
+        exercise.id,
+        i,
+        line.text,
+        line.speaker === "A",
+        0.9
+      );
       await new Promise((r) => setTimeout(r, 600));
     }
     if (mountedRef.current) {
       setIsPlaying(false);
       setPhase("questions");
     }
-  }, [exercise.lines, isPlaying]);
+  }, [exercise.lines, exercise.id, isPlaying]);
 
   useEffect(() => {
     if (phase === "playing" && !isPlaying && replaysUsed === 0) {
@@ -1087,6 +1096,7 @@ function DictationExerciseView({
     <>
       <AudioPlayer
         text={exercise.audioText}
+        audioPath={`/audio/listening/${exercise.id}.mp3`}
         onPlaybackComplete={onAudioComplete}
         maxReplays={2}
       />

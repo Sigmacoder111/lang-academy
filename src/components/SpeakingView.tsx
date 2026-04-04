@@ -9,7 +9,7 @@ import {
   type SentenceExercise,
 } from "../data/speaking-exercises";
 import { isSpeechRecognitionSupported } from "../utils/speech";
-import { speakChinese, stopSpeaking } from "../utils/speech";
+import { speakChinese, stopSpeaking, playVocabAudio } from "../utils/speech";
 import SpeechRecorder from "./SpeechRecorder";
 import SpeakingFeedback, {
   generateLocalFeedback,
@@ -269,7 +269,7 @@ function WordExerciseView({
       {/* Listen button */}
       <div style={{ textAlign: "center", marginBottom: "1rem" }}>
         <button
-          onClick={() => speakChinese(exercise.hanzi, 0.8)}
+          onClick={() => playVocabAudio(exercise.id, exercise.hanzi, 0.8)}
           style={listenButtonStyle}
         >
           🔊 Listen
@@ -359,7 +359,7 @@ function SentenceExerciseView({
 
       <div style={{ textAlign: "center", marginBottom: "1rem" }}>
         <button
-          onClick={() => speakChinese(exercise.hanzi, 0.8)}
+          onClick={() => playVocabAudio(exercise.id, exercise.hanzi, 0.8)}
           style={listenButtonStyle}
         >
           🔊 Listen
@@ -413,9 +413,9 @@ function ConversationExerciseView({
   const isSupported = isSpeechRecognitionSupported();
 
   const handlePlayPrompt = useCallback(async () => {
-    await speakChinese(exercise.promptChinese, 0.85);
+    await speakChinese(exercise.promptChinese, 0.85, `/audio/speaking/${exercise.id}.mp3`);
     setPhase("record");
-  }, [exercise.promptChinese]);
+  }, [exercise.promptChinese, exercise.id]);
 
   const handleTranscript = useCallback(
     (transcript: string) => {

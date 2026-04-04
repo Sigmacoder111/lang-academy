@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import type { MCQuestion } from "../types/tasks";
+import { speakChinese } from "../utils/speech";
 
 interface ErrorCorrectionFlowProps {
   question: MCQuestion;
@@ -82,6 +83,25 @@ export default function ErrorCorrectionFlow({
             }}>
               Say the correct answer aloud to reinforce it
             </div>
+            {hasChinese && (
+              <button
+                onClick={() => speakChinese(correctOption, 0.85)}
+                style={{
+                  marginTop: "0.75rem",
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontSize: "14px",
+                  background: "var(--listening-blue, #6b7fd7)",
+                  color: "#FFFFFF",
+                  border: "none",
+                  borderRadius: "0.5rem",
+                  padding: "0.5rem 1.25rem",
+                  cursor: "pointer",
+                  transition: "opacity 0.2s ease",
+                }}
+              >
+                🔊 Listen to pronunciation
+              </button>
+            )}
           </div>
         </div>
       )}
