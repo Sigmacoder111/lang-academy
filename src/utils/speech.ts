@@ -1,7 +1,48 @@
-export function speakChinese(text: string, rate: number = 0.9): Promise<void> {
+let currentAudioElement: HTMLAudioElement | null = null;
+
+function playPreGeneratedAudio(path: string): Promise<void> {
   return new Promise((resolve, reject) => {
+    const audio = new Audio(path);
+    currentAudioElement = audio;
+    audio.onended = () => {
+      currentAudioElement = null;
+      resolve();
+    };
+    audio.onerror = () => {
+      currentAudioElement = null;
+      reject(new Error(`Failed to load audio: ${path}`));
+    };
+    audio.play().catch((err) => {
+      currentAudioElement = null;
+      reject(err);
+    });
+  });
+}
+
+function playPreGeneratedAudioWithRate(path: string, playbackRate: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const audio = new Audio(path);
+    currentAudioElement = audio;
+    audio.playbackRate = playbackRate;
+    audio.onended = () => {
+      currentAudioElement = null;
+      resolve();
+    };
+    audio.onerror = () => {
+      currentAudioElement = null;
+      reject(new Error(`Failed to load audio: ${path}`));
+    };
+    audio.play().catch((err) => {
+      currentAudioElement = null;
+      reject(err);
+    });
+  });
+}
+
+function speakWithWebSpeechAPI(text: string, rate: number = 0.9): Promise<void> {
+  return new Promise((resolve) => {
     if (!window.speechSynthesis) {
-      reject(new Error("SpeechSynthesis not supported"));
+      resolve();
       return;
     }
 
@@ -23,6 +64,87 @@ export function speakChinese(text: string, rate: number = 0.9): Promise<void> {
     utterance.onerror = () => resolve();
 
     window.speechSynthesis.speak(utterance);
+  });
+}
+
+/**
+ * Plays pre-generated audio for a given node/exercise, with Web Speech API fallback.
+ * @param text - The Chinese text to speak (used as fallback)
+ * @param rate - Speech rate (default 0.9)
+ * @param audioPath - Optional path to pre-generated MP3 file
+ */
+export function speakChinese(
+  text: string,
+  rate: number = 0.9,
+  audioPath?: string
+): Promise<void> {
+  if (audioPath) {
+    return playPreGeneratedAudioWithRate(audioPath, rate < 0.8 ? 0.75 : 1.0).catch(() => {
+      return speakWithWebSpeechAPI(text, rate);
+    });
+  }
+  return speakWithWebSpeechAPI(text, rate);
+}
+
+/**
+ * Plays pre-generated audio for a listening exercise at a specific speed.
+ * Falls back to Web Speech API if the audio file is not available.
+ */
+export function playExerciseAudio(
+  exerciseId: string,
+  slow: boolean = false
+): Promise<void> {
+  const suffix = slow ? "_slow" : "";
+  const audioPath = `/audio/listening/${exerciseId}${suffix}.mp3`;
+  return playPreGeneratedAudio(audioPath).catch(() => {
+    return Promise.resolve();
+  });
+}
+
+/**
+ * Plays pre-generated dialogue line audio.
+ * Falls back to Web Speech API if the audio file is not available.
+ */
+export function playDialogueLineAudio(
+  exerciseId: string,
+  lineIndex: number,
+  text: string,
+  isSpeakerA: boolean,
+  rate: number = 0.9
+): Promise<void> {
+  const audioPath = `/audio/listening/${exerciseId}_line${lineIndex}.mp3`;
+  return playPreGeneratedAudio(audioPath).catch(() => {
+    return speakChineseWithVoice(text, isSpeakerA, rate);
+  });
+}
+
+/**
+ * Plays pre-generated vocab audio for a given node.
+ * Falls back to Web Speech API if the audio file is not available.
+ */
+export function playVocabAudio(
+  nodeId: string,
+  text: string,
+  rate: number = 0.9
+): Promise<void> {
+  const audioPath = `/audio/vocab/${nodeId}.mp3`;
+  return playPreGeneratedAudioWithRate(audioPath, rate < 0.8 ? 0.75 : 1.0).catch(() => {
+    return speakWithWebSpeechAPI(text, rate);
+  });
+}
+
+/**
+ * Plays pre-generated sentence audio for a given node.
+ * Falls back to Web Speech API if the audio file is not available.
+ */
+export function playSentenceAudio(
+  nodeId: string,
+  text: string,
+  rate: number = 0.9
+): Promise<void> {
+  const audioPath = `/audio/sentences/${nodeId}.mp3`;
+  return playPreGeneratedAudioWithRate(audioPath, rate < 0.8 ? 0.75 : 1.0).catch(() => {
+    return speakWithWebSpeechAPI(text, rate);
   });
 }
 
@@ -68,6 +190,11 @@ export function speakChineseWithVoice(
 }
 
 export function stopSpeaking(): void {
+  if (currentAudioElement) {
+    currentAudioElement.pause();
+    currentAudioElement.currentTime = 0;
+    currentAudioElement = null;
+  }
   if (window.speechSynthesis) {
     window.speechSynthesis.cancel();
   }
