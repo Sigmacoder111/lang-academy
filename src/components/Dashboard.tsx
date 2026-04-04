@@ -109,7 +109,6 @@ export default function Dashboard({
       <QuickStudy
         graph={graph}
         progress={progress}
-        xpState={xpState}
         onStartSession={(sessionTasks) => {
           if (sessionTasks.length > 0) {
             onSelectTask(sessionTasks[0]);

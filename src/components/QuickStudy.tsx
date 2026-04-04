@@ -1,7 +1,7 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { GraphNode } from "../types/graph";
 import type { UserProgress } from "../types/state";
-import type { Task, XPState } from "../types/tasks";
+import type { Task } from "../types/tasks";
 import {
   generateSmartSession,
   getSkillLabel,
@@ -14,14 +14,12 @@ const TIME_OPTIONS = [15, 20, 30, 45, 60];
 interface QuickStudyProps {
   graph: GraphNode[];
   progress: UserProgress;
-  xpState: XPState;
   onStartSession: (tasks: Task[]) => void;
 }
 
 export default function QuickStudy({
   graph,
   progress,
-  xpState,
   onStartSession,
 }: QuickStudyProps) {
   const [showSelector, setShowSelector] = useState(false);
@@ -31,10 +29,10 @@ export default function QuickStudy({
   const handleTimeSelect = useCallback(
     (minutes: number) => {
       setSelectedTime(minutes);
-      const plan = generateSmartSession(minutes, graph, progress, xpState);
+      const plan = generateSmartSession(minutes, graph, progress);
       setSessionPlan(plan);
     },
-    [graph, progress, xpState]
+    [graph, progress]
   );
 
   const handleStart = useCallback(() => {

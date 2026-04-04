@@ -32,7 +32,7 @@ export default function DrillView({ task, graph, onComplete, onBack }: DrillView
   const [showResult, setShowResult] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
-  const [startTime] = useState(Date.now());
+  const [startTime] = useState(() => Date.now());
 
   const currentQuestion = questions[currentIndex];
 

@@ -1,6 +1,6 @@
 import type { GraphNode, NodeType } from "../types/graph";
 import type { UserProgress } from "../types/state";
-import type { Task, SkillArea, XPState } from "../types/tasks";
+import type { Task, SkillArea } from "../types/tasks";
 import { loadAPExamDate } from "../data/themes";
 import { isUnlocked } from "./mastery";
 import { needsReview, overdueScore } from "./hierarchical-srs";
@@ -71,9 +71,6 @@ export function getSkillReadiness(
   // plus any explicit listening/reading/writing nodes
   // We also count mastered vocab as partial listening/speaking readiness
   const vocabNodes = [...skillBuckets.vocabulary, ...skillBuckets.grammar];
-  const masteredVocab = vocabNodes.filter(
-    (n) => progress[n.id] && progress[n.id].mastery >= 0.8
-  );
 
   if (skillBuckets.listening.length === 0) {
     skillBuckets.listening = vocabNodes;
@@ -156,8 +153,7 @@ export interface SessionSegment {
 export function generateSmartSession(
   totalMinutes: number,
   graph: GraphNode[],
-  progress: UserProgress,
-  xpState: XPState
+  progress: UserProgress
 ): SessionPlan {
   const readiness = getSkillReadiness(graph, progress);
   const now = Date.now();
@@ -185,7 +181,7 @@ export function generateSmartSession(
     if (minutes === 0) continue;
 
     const skillReadiness = readiness.find((r) => r.skill === skill)!;
-    const tasks = generateSkillTasks(skill, minutes, skillReadiness, graph, progress, now);
+    const tasks = generateSkillTasks(minutes, skillReadiness, graph, progress, now);
 
     segments.push({ skill, minutes, tasks });
     remainingMinutes -= minutes;
@@ -200,7 +196,6 @@ export function generateSmartSession(
 }
 
 function generateSkillTasks(
-  skill: SkillArea,
   minutes: number,
   readiness: SkillReadiness,
   graph: GraphNode[],

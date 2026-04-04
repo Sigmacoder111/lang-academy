@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { GraphNode } from "../types/graph";
 import type { UserProgress } from "../types/state";
-import type { XPState } from "../types/tasks";
 import { makeDefaultNodeState } from "../types/state";
 import {
   getSkillReadiness,
@@ -49,17 +48,6 @@ function makeNode(
 function makeState(overrides: Partial<ReturnType<typeof makeDefaultNodeState>> = {}) {
   return makeDefaultNodeState(overrides);
 }
-
-const defaultXPState: XPState = {
-  totalXP: 0,
-  todayXP: 0,
-  dailyGoal: 50,
-  streak: 0,
-  lastActiveDate: "",
-  tasksCompletedToday: 0,
-  questionsAnsweredToday: 0,
-  xpSinceLastQuiz: 0,
-};
 
 describe("adaptive-study", () => {
   beforeEach(() => {
@@ -158,7 +146,7 @@ describe("adaptive-study", () => {
         r1: makeState({ mastery: 0.9, nextReview: Date.now() + 100000 }),
       };
 
-      const plan = generateSmartSession(20, graph, progress, defaultXPState);
+      const plan = generateSmartSession(20, graph, progress);
       expect(plan.totalMinutes).toBe(20);
       expect(plan.segments.length).toBeGreaterThan(0);
 
