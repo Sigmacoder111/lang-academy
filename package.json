@@ -11,10 +11,15 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "pipeline": "tsx scripts/pipeline/run.ts",
-    "pipeline:validate": "tsx scripts/pipeline/validate-cli.ts"
+    "pipeline:validate": "tsx scripts/pipeline/validate-cli.ts",
+    "generate-audio": "tsx scripts/generate-audio.ts",
+    "generate-audio:vocab": "tsx scripts/generate-audio.ts --vocab-only",
+    "generate-audio:listening": "tsx scripts/generate-audio.ts --listening-only",
+    "generate-audio:dry-run": "tsx scripts/generate-audio.ts --dry-run"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
+    "openai": "^6.33.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "recharts": "^3.8.0",

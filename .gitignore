@@ -15,6 +15,9 @@ dist-ssr
 # Pipeline cache
 scripts/cache/*.json
 
+# Audio generation manifest (local cache for incremental generation)
+scripts/audio-manifest.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
