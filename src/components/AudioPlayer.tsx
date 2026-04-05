@@ -3,6 +3,7 @@ import { speakChinese, stopSpeaking } from "../utils/speech";
 
 interface AudioPlayerProps {
   text: string;
+  audioPath?: string;
   autoPlay?: boolean;
   autoPlayDelay?: number;
   maxReplays?: number;
@@ -12,6 +13,7 @@ interface AudioPlayerProps {
 
 export default function AudioPlayer({
   text,
+  audioPath,
   autoPlay = true,
   autoPlayDelay = 1000,
   maxReplays = 2,
@@ -19,19 +21,55 @@ export default function AudioPlayer({
   compact = false,
 }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [replaysUsed, setReplaysUsed] = useState(0);
   const [speed, setSpeed] = useState<1 | 0.7>(1);
   const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
   const [pulsePhase, setPulsePhase] = useState(0);
   const mountedRef = useRef(true);
   const autoPlayedRef = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     return () => {
       mountedRef.current = false;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
       stopSpeaking();
     };
   }, []);
+
+  const playWithAudioElement = useCallback(
+    (path: string, playbackRate: number): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        const audio = new Audio(path);
+        audioRef.current = audio;
+        audio.playbackRate = playbackRate;
+
+        audio.oncanplaythrough = () => {
+          if (mountedRef.current) setIsLoading(false);
+        };
+        audio.onended = () => {
+          audioRef.current = null;
+          resolve();
+        };
+        audio.onerror = () => {
+          audioRef.current = null;
+          reject(new Error(`Failed to load: ${path}`));
+        };
+
+        setIsLoading(true);
+        audio.play().catch((err) => {
+          audioRef.current = null;
+          setIsLoading(false);
+          reject(err);
+        });
+      });
+    },
+    []
+  );
 
   const play = useCallback(
     async (isReplay: boolean = false) => {
@@ -44,18 +82,29 @@ export default function AudioPlayer({
       }
 
       try {
-        await speakChinese(text, speed === 0.7 ? 0.7 : 0.9);
+        if (audioPath) {
+          const slowPath = audioPath.replace(/\.mp3$/, "_slow.mp3");
+          const pathToUse = speed === 0.7 ? slowPath : audioPath;
+          try {
+            await playWithAudioElement(pathToUse, speed === 0.7 ? 1.0 : 1.0);
+          } catch {
+            await speakChinese(text, speed === 0.7 ? 0.7 : 0.9);
+          }
+        } else {
+          await speakChinese(text, speed === 0.7 ? 0.7 : 0.9);
+        }
       } catch {
-        // Speech API may not be available
+        // Fallback failed silently
       }
 
       if (mountedRef.current) {
         setIsPlaying(false);
+        setIsLoading(false);
         setHasPlayedOnce(true);
         onPlaybackComplete?.();
       }
     },
-    [isPlaying, replaysUsed, maxReplays, text, speed, onPlaybackComplete]
+    [isPlaying, replaysUsed, maxReplays, text, speed, audioPath, onPlaybackComplete, playWithAudioElement]
   );
 
   useEffect(() => {
@@ -84,25 +133,25 @@ export default function AudioPlayer({
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
         <button
           onClick={() => play(hasPlayedOnce)}
-          disabled={isPlaying || (hasPlayedOnce && !canReplay)}
+          disabled={isPlaying || isLoading || (hasPlayedOnce && !canReplay)}
           style={{
             width: "2.5rem",
             height: "2.5rem",
             borderRadius: "50%",
-            background: isPlaying ? "var(--listening-blue)" : "var(--listening-blue)",
+            background: "var(--listening-blue)",
             border: "none",
-            cursor: isPlaying || (hasPlayedOnce && !canReplay) ? "default" : "pointer",
+            cursor: isPlaying || isLoading || (hasPlayedOnce && !canReplay) ? "default" : "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             fontSize: "1rem",
-            opacity: isPlaying || (hasPlayedOnce && !canReplay) ? 0.6 : 1,
+            opacity: isPlaying || isLoading || (hasPlayedOnce && !canReplay) ? 0.6 : 1,
             transition: "opacity 0.2s ease, transform 0.2s ease",
             color: "#FFFFFF",
             transform: isPlaying ? "scale(1.05)" : "scale(1)",
           }}
         >
-          {isPlaying ? "🔊" : "▶"}
+          {isLoading ? "⏳" : isPlaying ? "🔊" : "▶"}
         </button>
         {hasPlayedOnce && (
           <span
@@ -160,20 +209,20 @@ export default function AudioPlayer({
       {/* Play button */}
       <button
         onClick={() => play(hasPlayedOnce)}
-        disabled={isPlaying || (hasPlayedOnce && !canReplay)}
+        disabled={isPlaying || isLoading || (hasPlayedOnce && !canReplay)}
         style={{
           width: "4rem",
           height: "4rem",
           borderRadius: "50%",
-          background: isPlaying ? "var(--listening-blue)" : "var(--listening-blue)",
+          background: "var(--listening-blue)",
           border: "none",
-          cursor: isPlaying || (hasPlayedOnce && !canReplay) ? "default" : "pointer",
+          cursor: isPlaying || isLoading || (hasPlayedOnce && !canReplay) ? "default" : "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           fontSize: "1.5rem",
           margin: "0 auto 1rem",
-          opacity: isPlaying || (hasPlayedOnce && !canReplay) ? 0.6 : 1,
+          opacity: isPlaying || isLoading || (hasPlayedOnce && !canReplay) ? 0.6 : 1,
           transition: "opacity 0.2s ease, transform 0.2s ease",
           color: "#FFFFFF",
           transform: isPlaying ? "scale(1.08)" : "scale(1)",
@@ -182,7 +231,7 @@ export default function AudioPlayer({
             : "0 2px 8px rgba(107, 127, 215, 0.2)",
         }}
       >
-        {isPlaying ? "🔊" : hasPlayedOnce ? "🔄" : "▶"}
+        {isLoading ? "⏳" : isPlaying ? "🔊" : hasPlayedOnce ? "🔄" : "▶"}
       </button>
 
       {/* Controls row */}
@@ -258,13 +307,15 @@ export default function AudioPlayer({
           fontStyle: "italic",
         }}
       >
-        {isPlaying
-          ? "Listen carefully..."
-          : !hasPlayedOnce
-            ? "Audio will play automatically"
-            : canReplay
-              ? "Click to replay"
-              : "No replays remaining"}
+        {isLoading
+          ? "Loading audio..."
+          : isPlaying
+            ? "Listen carefully..."
+            : !hasPlayedOnce
+              ? "Audio will play automatically"
+              : canReplay
+                ? "Click to replay"
+                : "No replays remaining"}
       </div>
     </div>
   );

@@ -1,0 +1,3 @@
+# Ignore generated audio files (they're produced by scripts/generate-audio.ts)
+*.mp3
+!.gitkeep

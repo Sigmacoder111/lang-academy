@@ -32,7 +32,7 @@ import {
   predictTrendScore,
 } from "../engine/mock-exam";
 import type { DialogueExercise } from "../data/listening-exercises";
-import { speakChinese } from "../utils/speech";
+import { speakChinese, playExerciseAudio } from "../utils/speech";
 
 interface MockExamProps {
   onBack: () => void;
@@ -1557,7 +1557,9 @@ function ListeningQuestion({ question, questionIndex, totalQuestions, onAnswer }
   const [audioPlayed, setAudioPlayed] = useState(false);
 
   const playAudio = () => {
-    speakChinese(question.audioText);
+    playExerciseAudio(question.id).catch(() => {
+      speakChinese(question.audioText);
+    });
     setAudioPlayed(true);
   };
 
