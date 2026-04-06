@@ -399,6 +399,12 @@ export function getTaskTypeInfo(type: TaskType) {
       borderColor: "#ef4444",
       badgeBg: "#ef4444",
     },
+    writing: {
+      icon: "✍️",
+      label: "Writing",
+      borderColor: "var(--writing-green, #4A8C6F)",
+      badgeBg: "var(--writing-green, #4A8C6F)",
+    },
   };
   return info[type];
 }

@@ -1,6 +1,6 @@
 import type { GraphNode } from "./graph";
 
-export type TaskType = "lesson" | "review" | "quiz" | "multistep" | "listening" | "speaking" | "drill";
+export type TaskType = "lesson" | "review" | "quiz" | "multistep" | "listening" | "speaking" | "drill" | "writing";
 
 export interface BaseTask {
   id: string;
@@ -56,7 +56,16 @@ export interface DrillTask extends BaseTask {
   nodeIds: string[];
 }
 
-export type Task = LessonTask | ReviewTask | QuizTask | MultistepTask | ListeningTask | SpeakingTask | DrillTask;
+export type WritingTaskFormat = "story_narration" | "email_response";
+
+export interface WritingTask extends BaseTask {
+  type: "writing";
+  topic: GraphNode;
+  writingFormat: WritingTaskFormat;
+  promptId: string;
+}
+
+export type Task = LessonTask | ReviewTask | QuizTask | MultistepTask | ListeningTask | SpeakingTask | DrillTask | WritingTask;
 
 export interface XPState {
   totalXP: number;
@@ -91,6 +100,24 @@ export interface MCQuestion {
   passagePinyin?: string;
   modelResponse?: string;
   rubric?: string[];
+}
+
+export interface WritingEvaluation {
+  scores: {
+    taskCompletion: number;
+    organization: number;
+    languageUse: number;
+  };
+  overallScore: number;
+  feedback: string;
+  corrections: Array<{
+    original: string;
+    corrected: string;
+    explanation: string;
+  }>;
+  vocabularySuggestions: string[];
+  grammarIssues: string[];
+  modelResponse: string;
 }
 
 export interface SessionStats {
