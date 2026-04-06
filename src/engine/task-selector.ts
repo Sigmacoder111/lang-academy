@@ -9,6 +9,7 @@ import {
   detectWeakSpots,
   generateDrillTask,
 } from "./adaptive-study";
+import { getRandomWritingPrompt } from "../data/writing-prompts";
 
 const QUIZ_GATE_XP = 150;
 const MAX_TASKS = 5;
@@ -271,6 +272,30 @@ export function selectTasks(
       xpReward: 8,
       estimatedMinutes: 6,
     });
+  }
+
+  // 7b. Writing tasks — AI-graded writing practice
+  if (mastered.length >= 3 && tasks.length < MAX_TASKS) {
+    const writingCandidates = mastered.filter(
+      (n) => n.type === "writing" || n.type === "grammar" || n.type === "word"
+    );
+    const writingTopic =
+      writingCandidates.length > 0
+        ? writingCandidates[Math.floor(Math.random() * writingCandidates.length)]
+        : mastered[Math.floor(Math.random() * mastered.length)];
+
+    const format = Math.random() < 0.5 ? "story_narration" : "email_response";
+    const writingPrompt = getRandomWritingPrompt(format);
+
+    addTask({
+      id: `writing-${Date.now()}`,
+      type: "writing",
+      topic: writingTopic,
+      writingFormat: format,
+      promptId: writingPrompt.id,
+      xpReward: 15,
+      estimatedMinutes: 15,
+    } as Task);
   }
 
   // 8. Multistep tasks (skip in review-only mode)

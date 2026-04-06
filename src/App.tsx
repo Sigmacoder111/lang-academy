@@ -24,8 +24,9 @@ import DiagnosticReportView from "./components/DiagnosticReport";
 import XPBar from "./components/XPBar";
 import MockExam from "./components/MockExam";
 import DrillView from "./components/DrillView";
+import WritingView from "./components/WritingView";
 
-type View = "dashboard" | "lesson" | "review" | "quiz" | "multistep" | "listening" | "speaking" | "drill" | "diagnostic" | "diagnostic_report" | "mock_exam";
+type View = "dashboard" | "lesson" | "review" | "quiz" | "multistep" | "listening" | "speaking" | "drill" | "writing" | "diagnostic" | "diagnostic_report" | "mock_exam";
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -335,6 +336,16 @@ function App() {
             graph={GRAPH}
             onComplete={handleTaskComplete}
             onBack={handleBack}
+          />
+        )}
+
+        {view === "writing" && activeTask && activeTask.type === "writing" && (
+          <WritingView
+            topic={activeTask.topic}
+            onComplete={handleTaskComplete}
+            onBack={handleBack}
+            promptId={activeTask.promptId}
+            writingFormat={activeTask.writingFormat}
           />
         )}
 
