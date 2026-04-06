@@ -9,6 +9,7 @@ import {
   detectWeakSpots,
   generateDrillTask,
 } from "./adaptive-study";
+import { getRandomWritingPrompt } from "../data/writing-prompts";
 
 const QUIZ_GATE_XP = 150;
 const MAX_TASKS = 5;
@@ -273,7 +274,29 @@ export function selectTasks(
     });
   }
 
-  // 8. Multistep tasks (skip in review-only mode)
+  // 8. Writing tasks — high-value practice for AP exam
+  if (mastered.length >= 3 && tasks.length < MAX_TASKS) {
+    const writingFormat = Math.random() < 0.5 ? "story_narration" as const : "email_response" as const;
+    const writingPrompt = getRandomWritingPrompt(writingFormat);
+    const writingTopic = mastered.filter(
+      (n) => n.type === "writing" || n.type === "grammar" || n.type === "word"
+    );
+    const writingNode =
+      writingTopic.length > 0
+        ? writingTopic[Math.floor(Math.random() * writingTopic.length)]
+        : mastered[Math.floor(Math.random() * mastered.length)];
+    addTask({
+      id: `writing-${Date.now()}`,
+      type: "writing",
+      topic: writingNode,
+      writingFormat,
+      promptId: writingPrompt.id,
+      xpReward: 18,
+      estimatedMinutes: 15,
+    });
+  }
+
+  // 9. Multistep tasks (skip in review-only mode)
   if (!examConfig.reviewOnlyMode && mastered.length >= 4 && tasks.length < MAX_TASKS) {
     const multistepTopic = mastered[Math.floor(Math.random() * mastered.length)];
     addTask({
