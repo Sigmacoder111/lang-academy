@@ -37,11 +37,12 @@ export default function WritingInput({
     return () => clearInterval(interval);
   }, [timerActive, timeRemaining]);
 
-  useEffect(() => {
-    if (text.length > 0 && !timerActive) {
+  const handleTextChange = useCallback((value: string) => {
+    setText(value);
+    if (value.length > 0 && !timerActive) {
       setTimerActive(true);
     }
-  }, [text, timerActive]);
+  }, [timerActive]);
 
   const handleSubmit = useCallback(() => {
     if (text.trim().length === 0 || isLoading) return;
@@ -263,7 +264,7 @@ export default function WritingInput({
         <textarea
           ref={textareaRef}
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => handleTextChange(e.target.value)}
           placeholder={
             isStoryNarration
               ? "用中文写你的故事..."

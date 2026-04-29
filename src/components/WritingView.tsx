@@ -13,7 +13,7 @@ import WritingInput from "./WritingInput";
 import WritingFeedback from "./WritingFeedback";
 
 interface WritingViewProps {
-  topic: GraphNode;
+  topic?: GraphNode;
   promptId?: string;
   writingFormat?: "story_narration" | "email_response";
   onComplete: (result: TaskResult) => void;
@@ -24,7 +24,6 @@ const BASE_XP = 15;
 const BONUS_XP_THRESHOLD = 5;
 
 export default function WritingView({
-  topic,
   promptId,
   writingFormat,
   onComplete,

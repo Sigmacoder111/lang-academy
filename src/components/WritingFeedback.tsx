@@ -583,11 +583,10 @@ function highlightErrors(
 ): React.ReactNode {
   if (corrections.length === 0) return text;
 
-  let result = text;
   const highlights: { start: number; end: number; original: string }[] = [];
 
   for (const correction of corrections) {
-    const idx = result.indexOf(correction.original);
+    const idx = text.indexOf(correction.original);
     if (idx !== -1) {
       highlights.push({
         start: idx,
