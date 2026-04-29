@@ -23,6 +23,7 @@
 
   --listening-blue: #6B7FD7;
   --speaking-brown: #8B6F47;
+  --writing-teal: #2B8A7E;
 
   --badge-radical-bg: #F0E6D3;
   --badge-radical-text: #8B7355;
@@ -42,6 +43,7 @@
 
   --listening-blue: #7B8FE7;
   --speaking-brown: #A08050;
+  --writing-teal: #3BA89E;
 
   --badge-radical-bg: #3D3528;
   --badge-radical-text: #C9B898;
@@ -103,4 +105,9 @@ body {
 @keyframes waveBar {
   0%, 100% { transform: scaleY(0.3); }
   50% { transform: scaleY(1); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
